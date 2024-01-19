@@ -1,0 +1,27 @@
+task :default => :run do
+end
+
+task :run do |t|
+    system 'uvicorn simile.restapi:app --reload'
+end
+
+task :unittest do |t|
+    shell 'python3 -m unittest -v tests/*.py'
+end
+
+task :test => :pytest
+
+# to select a specific testcase, use
+# $ pytest tests/*.py -v -k inmem -rP
+task :pytest do |t|
+    shell 'pytest tests/*.py -v -rP'
+end
+
+def shell(cmd)
+    puts "#{cmd}"
+    system "#{cmd}"
+end
+
+task :clean do
+    shell "find . -name __pycache__ -type d -exec rm -rvf  \{\} \\;"
+end
