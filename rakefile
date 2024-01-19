@@ -14,7 +14,7 @@ task :test => :pytest
 # to select a specific testcase, use
 # $ pytest tests/*.py -v -k inmem -rP
 task :pytest do |t|
-    shell 'pytest tests/*.py -v -rP'
+    shell 'pytest src/**/*-test.py -v -rP'
 end
 
 def shell(cmd)
