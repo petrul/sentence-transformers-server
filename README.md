@@ -18,5 +18,3 @@ Use
 ``` $ rake test
 ```
 for passing the testsSimile is a pile of stuff that looks for similarity between its elements.
-
-
