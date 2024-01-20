@@ -23,5 +23,6 @@ def shell(cmd)
 end
 
 task :clean do
+    shell "rm -rf .pytest_cache"
     shell "find . -name __pycache__ -type d -exec rm -rvf  \{\} \\;"
 end
