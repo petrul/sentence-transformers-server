@@ -9,14 +9,14 @@ def p(*args):
 # use this to hold an id with the weight
 @dataclass
 class WeightedId:
-    id: object
-    index: int
-    weight: float
+    id: object  # the id of the object being weighted, can be a string, a url
+    index: int  # internal index, an int, in the internal matrix used to store distances
+    weight: float # the actual weight.
 
 
 class Store:
     
-    def put(self, key: object, value):
+    def put(self, key: object, value: numpy.ndarray[float] | list[float] ):
         pass
     
     def get(self, key, value) -> object:
@@ -43,7 +43,7 @@ class EncoderFactory:
     def all_MiniLM_L6_v2():
         name = 'all-MiniLM-L6-v2'
         resp = SentenceTransformer(name)
-        p('model [%s], with max sql length %d' % (name, resp.get_max_seq_length()))
+        p('model [%s], with max_seq_length %d' % (name, resp.get_max_seq_length()))
         return resp
 
 class VectorStoreFactory:

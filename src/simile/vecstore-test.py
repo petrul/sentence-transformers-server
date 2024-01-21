@@ -17,6 +17,9 @@ class StoreTest(unittest.TestCase):
         ids = ["id%d" % i for i in range(len(sentences))]
         
         embeddings = encoder.encode(sentences)
+        for emb in embeddings:
+            assert len(emb) == 384 # all_MiniLM_L6_v2 constant
+        
         vs = VectorStoreFactory.inmemory()
         assert len(vs) == 0
         id0 = ids[0]
@@ -80,8 +83,8 @@ def p(*args):
     print(*args)
 
 if __name__ == '__main__':
-    unittest.main()
-    # StoreTest().testGetPut()
+    # unittest.main()
+    StoreTest().testGetPut()
     # StoreTest().testInMemoryStore()
     
     

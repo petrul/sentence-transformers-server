@@ -11,6 +11,11 @@ class FilenameAndContent:
         self.path = path
         self.content = content
         self.location = location
+        
+    def id(self):
+        if self.location == None:
+            return self.path
+        return f'{self.path}/{self.location}'
 
 @dataclass
 class TextbaseDownloads:
