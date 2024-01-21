@@ -1,5 +1,6 @@
 # textbase readers stuff
 from dataclasses import dataclass
+import os
 
 @dataclass
 class FilenameAndContent:
@@ -20,11 +21,11 @@ class FilenameAndContent:
 @dataclass
 class TextbaseDownloads:
     
-    basedir = "/home/petru/data/textbase-dl/"
+    def __init__(self, basedir="~/data/textbase-dl/"):
+        self.basedir = os.path.expanduser(basedir)
     
     # traverse root directory, and list directories as dirs and files as files
     def files(self) :
-        import os
         for root, dirs, files in os.walk(self.basedir):
             for file in files:
                 cmplPath = os.path.join(root, file)
