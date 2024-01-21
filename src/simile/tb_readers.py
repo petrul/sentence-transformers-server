@@ -13,10 +13,12 @@ class FilenameAndContent:
         self.content = content
         self.location = location
         
-    def id(self):
+    def id(self, basepath: str):
+        assert self.path.startswith(basepath)
+        relevantPath =  self.path[len(basepath):]
         if self.location == None:
-            return self.path
-        return f'{self.path}/{self.location}'
+            return relevantPath
+        return f'{relevantPath}#{self.location}'
 
 @dataclass
 class TextbaseDownloads:
