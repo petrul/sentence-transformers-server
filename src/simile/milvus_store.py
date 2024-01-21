@@ -87,7 +87,7 @@ class MilvusVecstore(Store):
 def p(args): print(args)
         
 if __name__ == '__main__':
-    milv = MilvusVecstore(collectionName='textbase_with_content', storeContent=True)
+    milv = MilvusVecstore(collectionName='textbase_with_content_all', storeContent=True)
     p(milv.listCollections())
     milv.collection.compact()
     p(milv.collection.primary_field)

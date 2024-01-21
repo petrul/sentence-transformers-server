@@ -7,7 +7,7 @@ This project uses sentencetransformers models in order to compute similarities.
 
 ## Prereqs
 ```
-$ pip install sentence transformers
+$ pip install sentence_transformers
 $ pip install fastapi
 $ pip install "uvicorn[standard]"
 ```

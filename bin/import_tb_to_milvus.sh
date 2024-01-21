@@ -1,0 +1,1 @@
+python3  src/simile/milvus_store.py
