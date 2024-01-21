@@ -20,17 +20,13 @@ class FilenameAndContent:
 @dataclass
 class TextbaseDownloads:
     
-    basedir = "/home/petru/data/textbase-dl/dickens"
+    basedir = "/home/petru/data/textbase-dl/"
     
     # traverse root directory, and list directories as dirs and files as files
     def files(self) :
         import os
         for root, dirs, files in os.walk(self.basedir):
-            # path = root.split(os.sep)
-            # p(path)
-            # print((len(path) - 1) * '---', os.path.basename(root))
             for file in files:
-                # print(len(path) * '---', file)
                 cmplPath = os.path.join(root, file)
                 yield cmplPath
     
@@ -42,11 +38,11 @@ class TextbaseDownloads:
                 txt = file.read()
                 yield FilenameAndContent(path=f, content=txt)
                 
-    def paragraphs(self):
-        i = 0
+    def paragraphs(self):        
         for ch in self.chapters():
             txt = ch.content
             paras = txt.split('\n')
+            i = 0
             for p in paras:
                 if p.strip() != "":
                     yield FilenameAndContent(path=ch.path, location="%d" % i, content=p)
@@ -58,10 +54,31 @@ class TextbaseDownloads:
             sentences = txt.split('.')
             i = 0
             for s in sentences:
-                s = s.strip() + '.'
-                if s != ".":
+                s = s.strip()
+                if s != "" and len(s) > 10:
                     yield FilenameAndContent(path=ch.path, location="%s-%d" % (ch.location, i), content=s)
                 i += 1
+    
+    @staticmethod
+    def get_sentence(filenameId: str):
+        assert "/" in filenameId
+        assert "-" in filenameId
+        split = filenameId.split("/")
+        lastElem = split[-1]
+        split = lastElem.split("-")
+        paragraphNr, sentenceNr = split[0], split[1]
+        return TextbaseDownloads.get_sentence()
+    
+    @staticmethod
+    def get_sentence(filenamePath: str, paragraphNr: int, sentenceNr: int):
+        with open(filenamePath) as file:
+                txt = file.read()
+                paras = txt.split('\n')
+                para = paras[paragraphNr]
+                sentences = para.split('.')
+                sentence = sentences[sentenceNr]
+                return sentence
+        
 
 def p(args): print(args)
 

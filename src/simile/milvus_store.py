@@ -16,18 +16,28 @@ class MilvusVecstore(Store):
     collection: Collection
     
     # vector dim is the size of the vectors that you expect to store
-    def __init__(self, address = "localhost:19530", collectionName="default", vector_dimension=384):
+    def __init__(self, address = "localhost:19530", 
+                 collectionName="default",
+                 vector_dimension=384,
+                 storeContent: bool = False):
         p(self.fmt.format('starting Milvus'))
         connections.connect("default",  address=address)
         collectionExists = utility.has_collection("hello_milvus")
         p(f"Does collection [{collectionName}] exist in Milvus: {collectionExists}")
                 
         if not collectionExists:
-            fields = [
-                FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
-                # FieldSchema(name="random", dtype=DataType.DOUBLE),
-                FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
-            ]
+            fields: list
+            if (storeContent):
+                fields = [
+                    FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
+                    FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=5000),
+                    FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
+                ]
+            else:
+                fields = [
+                    FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
+                    FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
+                ]
 
             schema = CollectionSchema(fields, "Embedding vectors representing text")
 
@@ -50,6 +60,16 @@ class MilvusVecstore(Store):
         ]
         insert_result = self.collection.insert(toInsert)
         p(f"insert result {insert_result}")
+        
+    def put(self, key: object, value: numpy.ndarray, content: str):
+        toInsert = [
+            [key],
+            [content],
+            [value]
+        ]
+        insert_result = self.collection.insert(toInsert)
+        p(f"insert result {insert_result}")
+
 
     def flush(self):
         self.collection.flush()
@@ -67,7 +87,7 @@ class MilvusVecstore(Store):
 def p(args): print(args)
         
 if __name__ == '__main__':
-    milv = MilvusVecstore(collectionName='textbase')
+    milv = MilvusVecstore(collectionName='textbase_with_content', storeContent=True)
     p(milv.listCollections())
     milv.collection.compact()
     p(milv.collection.primary_field)
@@ -83,8 +103,8 @@ if __name__ == '__main__':
         p (f"{i} : encoding {s.path} / {s.location} : [{s.content}]")
         emb = enc.encode(s.content)
         p(f'milv.put({s.id()}, {len(emb)})')
-        milv.put(s.id(), emb)
-        if (i % 1000 ==  0): 
+        milv.put(s.id(), emb, s.content)
+        if (i % 5000 ==  0): 
             p("flushing")
             milv.flush()
         i += 1
