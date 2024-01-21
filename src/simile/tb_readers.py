@@ -42,11 +42,11 @@ class TextbaseDownloads:
                 txt = file.read()
                 yield FilenameAndContent(path=f, content=txt)
                 
-    def paragraphs(self):
-        i = 0
+    def paragraphs(self):        
         for ch in self.chapters():
             txt = ch.content
             paras = txt.split('\n')
+            i = 0
             for p in paras:
                 if p.strip() != "":
                     yield FilenameAndContent(path=ch.path, location="%d" % i, content=p)

@@ -84,7 +84,7 @@ if __name__ == '__main__':
         emb = enc.encode(s.content)
         p(f'milv.put({s.id()}, {len(emb)})')
         milv.put(s.id(), emb)
-        if (i % 1000 ==  0): 
+        if (i % 5000 ==  0): 
             p("flushing")
             milv.flush()
         i += 1
