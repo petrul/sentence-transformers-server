@@ -96,6 +96,7 @@ if __name__ == '__main__':
 
     enc = EncoderFactory.all_MiniLM_L6_v2()
     tbdl = TextbaseDownloads()
+    p(f'will import from {tbdl.basedir}')
     sentences = tbdl.sentences()
     # sentences = islice(sentences, 200)
     i = 0
