@@ -1,9 +1,4 @@
-Simile is a document server which can give you the closest documents to any given one.
-
-Simile is a map in which you can add content and which can tell you
-which of its elements are closest to any given.
-
-This project uses sentencetransformers models in order to compute similarities.
+This is basically a SBERT 'client' which uploads data into milvus.
 
 ## Prereqs
 ```
@@ -11,11 +6,13 @@ $ pip install sentence_transformers
 $ pip install fastapi
 $ pip install "uvicorn[standard]"
 $ pip install pymilvus
+
+Or, run bin/install-deps.sh
+
 ```
 
 
 ## Test
-Use 
+Run 
 ``` $ rake test
 ```
-for passing the testsSimile is a pile of stuff that looks for similarity between its elements.
