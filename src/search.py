@@ -11,7 +11,7 @@ class Searcher:
     def __init__(self, colectionName) -> None:
         self.colectionName  = colectionName
       
-    def search(self,  dlbasedir, query: str):
+    def search(self,  dlbasedir, query: str, max_results: int = 10):
         enc = EncoderFactory.all_MiniLM_L6_v2()
         milv = MilvusVecstore(collectionName=self.colectionName, storeContent=False)
         tbdl = TextbaseDownloads(dlbasedir)
@@ -25,10 +25,14 @@ class Searcher:
             "ignore_growing": False, 
             "params": {"nprobe": 20}
         }
-        resp = milv.collection.search([emb], 'embeddings', search_params, 20)
+        resp = milv.collection.search([emb], 'embeddings', search_params, max_results)
         hits = resp[0]
         
-        dlsentences = [ DlSentence.fromMilvusId(tbdl.basedir, it.id) for it in hits ]
+        dlsentences = [(
+                            DlSentence.fromMilvusId(tbdl.basedir, it.id),
+                            it.distance
+                        )
+                       for it in hits ]
         return dlsentences
 
 
@@ -45,20 +49,23 @@ if __name__ == '__main__':
     # quit()
     
     parser.add_argument('--dl', type=str, help='Textbase downloads directory', default='~/data/textbase-dl')
-    parser.add_argument('-address', type=str, help='Milvus server address', default="mini.local:19530")
-    parser.add_argument('-col', type=str, help='Milvus collection name', default=defaultCollectionName)
+    parser.add_argument('--address', type=str, help='Milvus server address', default="mini.local:19530")
+    parser.add_argument('--collection', type=str, help='Milvus collection name', default=defaultCollectionName)
+    parser.add_argument('-n', type=int, help='max results nr', default=10)
 
     args, unknown  = parser.parse_known_args()
-    
     query_str =  ' '.join(unknown)
-    colName = args.col
+    
+    colName = args.collection
     basedir = os.path.expanduser(args.dl)
+    max_results = args.n
 
     if query_str.strip() == '':
         raise Exception('please provide a text to search')
     
-    sentences = Searcher(colName).search(basedir, query_str)
+    hits = Searcher(colName).search(basedir, query_str, max_results)
     
-    for sent in sentences:
-            p(f'{sent.getId()}:')
+    for sent, dist  in hits:
+            p(f'{sent.getId()} - {dist} :')
+            p(f'{sent.paragraph.file.getCompletePath()}:')
             p(f'\t{sent.text()}')
