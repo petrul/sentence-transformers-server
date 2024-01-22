@@ -68,4 +68,5 @@ if __name__ == '__main__':
     for sent, dist  in hits:
             p(f'{sent.getId()} - {dist} :')
             p(f'{sent.paragraph.file.getCompletePath()}:')
+            p(f'{sent.paragraph.file.getTextbaseUrl()}:')
             p(f'\t{sent.text()}')

@@ -2,23 +2,23 @@
 from dataclasses import dataclass
 import os
 
-@dataclass
-class FilenameAndContent:
-    path: str
-    location: str # extra location within a path
-    content: str
+# @dataclass
+# class FilenameAndContent:
+#     path: str
+#     location: str # extra location within a path
+#     content: str
     
-    def __init__(self, path, content, location=None):
-        self.path = path
-        self.content = content
-        self.location = location
+#     def __init__(self, path, content, location=None):
+#         self.path = path
+#         self.content = content
+#         self.location = location
         
-    def id(self, basepath: str):
-        assert self.path.startswith(basepath)
-        relevantPath =  self.path[len(basepath):]
-        if self.location == None:
-            return relevantPath
-        return f'{relevantPath}#{self.location}'
+#     def id(self, basepath: str):
+#         assert self.path.startswith(basepath)
+#         relevantPath =  self.path[len(basepath):]
+#         if self.location == None:
+#             return relevantPath
+#         return f'{relevantPath}#{self.location}'
 
 class DlContent:
     def getId(self) -> str:
@@ -45,7 +45,13 @@ class DlFile(DlContent):
         return os.path.join(this.dir, this.filename)
     
     def getTextbaseUrl(self) -> str:
-        return f'https://textbase.scriptorium.ro{self.getId()}'
+        import re
+        id = self.filename
+        id = id.replace('__', '/')
+        id = id[:-4]
+        id = re.sub('\d+', '|', id)
+        id = id.replace('|_|_', '/')
+        return f'https://textbase.scriptorium.ro{id}'
     
 
     def text(self) -> str:
