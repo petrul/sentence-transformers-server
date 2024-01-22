@@ -23,60 +23,14 @@ class Searcher:
             "metric_type": "L2", 
             "offset": 0, 
             "ignore_growing": False, 
-            "params": {"nprobe": 10}
+            "params": {"nprobe": 20}
         }
-        resp = milv.collection.search([emb], 'embeddings', search_params, 10)
-        
-        # p(resp)
-        p(type(resp))
-        p(type(resp[0]))
+        resp = milv.collection.search([emb], 'embeddings', search_params, 20)
         hits = resp[0]
-        p(hits[0])
-        p(type(hits))
         
-        hhits = [str(it) for it in hits]
-        p(hhits)
-        # p('\n'.join(hhits))
-        p('================')
-        p([ it.id for it in hits])
-        
-        dlsentences = [ DlSentence.fromMilvusId(tbdl.basedir, it.id) for it in hits]
-        p('\n'.join([it.text() for it in dlsentences]))
-        
-        # p('\n'.join(hits))
-        
-        # p('\n'.join(resp))
-        
+        dlsentences = [ DlSentence.fromMilvusId(tbdl.basedir, it.id) for it in hits ]
+        return dlsentences
 
-        # p(f'will import from {tbdl.basedir}')
-        # sentences = tbdl.sentences()
-        # sentences = islice(sentences, 200)
-        i = 0
-        # for s in sentences:
-        #     # p (f"{i} : encoding {s.path} / {s.location} : [{s.content}]")
-            
-        #     id = s.id(tbdl.basedir)
-        #     if store_content:
-        #         p (f'#{i} : {id} : len={len(s.content)}')
-        #     else:
-        #         p (f'#{i} : {id}')
-                
-        #     milv.put(id, emb, s.content)
-        #     if (i % 5000 ==  0):
-        #         p("flushing")
-        #         milv.flush()
-        #     i += 1
-            
-        # p('done, flushing...')
-        # milv.flush()
-        # p('done, will create index...')
-        # milv.createIndex_IVFFLAT_OnEmbeddings()
-        # milv.collection.load()
-        
-        # resp = milv.collection.query(expr='id != ""', output_fields=['id'])
-        # # p(resp)
-        # p(len(resp))
-        # p(milv.count())
 
 if __name__ == '__main__':
     import argparse
@@ -86,11 +40,11 @@ if __name__ == '__main__':
  
     parser = argparse.ArgumentParser(description='Search')
     
-    Searcher(defaultCollectionName).search("/home/petru/data/textbase-dl", 
-                                           "Where was Jesus born?")
+    # Searcher(defaultCollectionName).search("/home/petru/data/textbase-dl", 
+    #                                        "Where was Jesus born?")
     
-    quit()
-    parser.add_argument('--dl', type=str, help='Textbase downloads directory', required=True)
+    # quit()
+    parser.add_argument('--dl', type=str, help='Textbase downloads directory', default='~/data/textbase-dl')
     parser.add_argument('-address', type=str, help='Milvus server address', default="mini.local:19530")
     parser.add_argument('-col', type=str, help='Milvus collection name', default=defaultCollectionName)
 
@@ -99,9 +53,15 @@ if __name__ == '__main__':
     query_str =  ' '.join(unknown)
     colName = args.col
     basedir = os.path.expanduser(args.dl)
+
+    if query_str.strip() == '':
+        raise Exception('please provide a text to search')
     
+    sentences = Searcher(colName).search(basedir, query_str)
     
-    Searcher(colName).search(basedir, query_str)
+    for sent in sentences:
+            p(f'{sent.getId()}:')
+            p(f'\t{sent.text()}')
 
     # tbdir = os.path.expanduser(args.dl)
     
