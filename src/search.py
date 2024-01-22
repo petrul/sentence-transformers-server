@@ -63,10 +63,13 @@ if __name__ == '__main__':
     if query_str.strip() == '':
         raise Exception('please provide a text to search')
     
+    p(f'will use query [{query_str}]')
+    p('=========')
     hits = Searcher(colName).search(basedir, query_str, max_results)
     
     for sent, dist  in hits:
-            p(f'{sent.getId()} - {dist} :')
-            p(f'{sent.paragraph.file.getCompletePath()}:')
-            p(f'{sent.paragraph.file.getTextbaseUrl()}:')
-            p(f'\t{sent.text()}')
+        p('=========')
+        p(f'{sent.getId()} - {dist} :')
+        p(f'{sent.paragraph.file.getCompletePath()}:')
+        p(f'{sent.paragraph.file.getTextbaseUrl()}:')
+        p(f'\t{sent.text()}')
