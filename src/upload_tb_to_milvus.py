@@ -39,7 +39,7 @@ class Main:
         p('done, flushing...')
         milv.flush()
         p('done, will create index...')
-        milv.createIndexOnEmbeddings()
+        milv.createIndex_IVFFLAT_OnEmbeddings()
         milv.collection.load()
         
         resp = milv.collection.query(expr='id != ""', output_fields=['id'])

@@ -52,9 +52,11 @@ class MilvusVecstore(Store):
 
 
     def finish(self):
-        self.createIndexOnEmbeddings()
+        self.createIndex_DISKANN_OnEmbeddings()
+        # self.createIndex_IVFFLAT_OnEmbeddings()
 
-    def createIndexOnEmbeddings(self):
+    # NB: this might eat up RAM
+    def createIndex_IVFFLAT_OnEmbeddings(self):
         print(self.fmt.format("Start Creating index IVF_FLAT"))
         index = {
                 "index_type": "IVF_FLAT",
@@ -63,6 +65,16 @@ class MilvusVecstore(Store):
             }
 
         self.collection.create_index("embeddings", index)
+
+    def createIndex_DISKANN_OnEmbeddings(self):
+        print(self.fmt.format("Start Creating index DISKANN"))
+        index_params = {
+            "index_type": "DISKANN",
+            "metric_type": "L2",
+            "params": {}
+        }
+
+        self.collection.create_index("embeddings", index_params)
 
     def put(self, key: object, value: numpy.ndarray, content: str = None):
         toInsert: list
