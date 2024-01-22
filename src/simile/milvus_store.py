@@ -14,7 +14,7 @@ class MilvusVecstore(Store):
 
     fmt = "\n=== {:30} ===\n"    
     collection: Collection
-    maxContentLength=5000
+    maxContentLength=5000 # varchar length for field content
     
     # vector dim is the size of the vectors that you expect to store
     def __init__(self, address = "localhost:19530", 
@@ -72,13 +72,15 @@ class MilvusVecstore(Store):
         
     def put(self, key: object, value: numpy.ndarray, content: str):
         content = content[0 : self.maxContentLength]
+        assert len(content) <= self.maxContentLength
         toInsert = [
             [key],
             [content],
             [value]
         ]
         insert_result = self.collection.insert(toInsert)
-        p(f"insert result {insert_result}")
+        # return result
+        # p(f"insert result {insert_result}")
 
 
     def flush(self):

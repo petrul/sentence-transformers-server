@@ -22,10 +22,11 @@ class Main:
         # sentences = islice(sentences, 200)
         i = 0
         for s in sentences:
-            p (f"{i} : encoding {s.path} / {s.location} : [{s.content}]")
-            emb = enc.encode(s.content)
+            # p (f"{i} : encoding {s.path} / {s.location} : [{s.content}]")
+            emb = enc.encode(s.content, show_progress_bar=False)
             id = s.id(tbdl.basedir)
-            p(f'milv.put({id}, {len(emb)})')
+            p (f'#{i} : {id} : len={len(s.content)}')
+            # p(f'milv.put({id}, {len(emb)})')
             milv.put(id, emb, s.content)
             if (i % 5000 ==  0):
                 p("flushing")
