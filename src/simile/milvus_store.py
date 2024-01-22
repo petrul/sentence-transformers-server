@@ -80,23 +80,6 @@ class MilvusVecstore(Store):
                 [value]
             ]
         insert_result = self.collection.insert(toInsert)
-        # p(f"insert result {insert_result}")
-        
-    # def put(self, key: object, value: numpy.ndarray, content: str):
-    #     if (not self.storeContent):
-    #         self.put(key, value)
-    #     else:
-    #         content = content[0 : self.maxContentLength]
-    #         assert len(content) <= self.maxContentLength
-    #         toInsert = [
-    #             [key],
-    #             [content],
-    #             [value]
-    #         ]
-    #         insert_result = self.collection.insert(toInsert)
-    #         # return result
-    #         # p(f"insert result {insert_result}")
-
 
     def flush(self):
         self.collection.flush()
