@@ -41,9 +41,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Search')
     
     # Searcher(defaultCollectionName).search("/home/petru/data/textbase-dl", 
-    #                                        "Where was Jesus born?")
-    
+    #                                        "Where was Jesus born?")    
     # quit()
+    
     parser.add_argument('--dl', type=str, help='Textbase downloads directory', default='~/data/textbase-dl')
     parser.add_argument('-address', type=str, help='Milvus server address', default="mini.local:19530")
     parser.add_argument('-col', type=str, help='Milvus collection name', default=defaultCollectionName)
@@ -62,12 +62,3 @@ if __name__ == '__main__':
     for sent in sentences:
             p(f'{sent.getId()}:')
             p(f'\t{sent.text()}')
-
-    # tbdir = os.path.expanduser(args.dl)
-    
-    # store_content: bool = args.store_content
-    
-    # if not os.path.isdir(tbdir):
-    #     raise(Exception("not a directory: %s" % tbdir))
-
-    # Main().main(colName=colName, store_content=store_content)
