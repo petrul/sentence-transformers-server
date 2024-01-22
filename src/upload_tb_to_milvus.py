@@ -7,9 +7,9 @@ from itertools import islice
 def p(args): print(args)
 
 class Main:    
-    def main(self, colName):
+    def main(self, colName: str, store_content: bool):
         enc = EncoderFactory.all_MiniLM_L6_v2()
-        milv = MilvusVecstore(collectionName=colName, storeContent=True)
+        milv = MilvusVecstore(collectionName=colName, storeContent=store_content)
         # p(milv.listCollections())
         milv.collection.compact()
         p(milv.collection.primary_field)
@@ -25,8 +25,11 @@ class Main:
             # p (f"{i} : encoding {s.path} / {s.location} : [{s.content}]")
             emb = enc.encode(s.content, show_progress_bar=False)
             id = s.id(tbdl.basedir)
-            p (f'#{i} : {id} : len={len(s.content)}')
-            # p(f'milv.put({id}, {len(emb)})')
+            if store_content:
+                p (f'#{i} : {id} : len={len(s.content)}')
+            else:
+                p (f'#{i} : {id}')
+                
             milv.put(id, emb, s.content)
             if (i % 5000 ==  0):
                 p("flushing")
@@ -52,15 +55,17 @@ if __name__ == '__main__':
  
     parser = argparse.ArgumentParser(description='Print the sum of two numbers')
     
-    parser.add_argument('-d', type=str, help='Textbase downloads directory', required=True)
-    parser.add_argument('-c', type=str, help='Milvus collection name', default=defaultCollectionName)
+    parser.add_argument('--dl', type=str, help='Textbase downloads directory', required=True)
+    parser.add_argument('--col', type=str, help='Milvus collection name', default=defaultCollectionName)
+    parser.add_argument('--store_content', type=bool, help='Store content together with the vectors', default=False)
 
     args = parser.parse_args()
 
-    tbdir = os.path.expanduser(args.d)
-    colName = args.c
+    tbdir = os.path.expanduser(args.dl)
+    colName = args.col
+    store_content: bool = args.store_content
     
     if not os.path.isdir(tbdir):
         raise(Exception("not a directory: %s" % tbdir))
 
-    Main().main(colName=colName)
+    Main().main(colName=colName, store_content=store_content)

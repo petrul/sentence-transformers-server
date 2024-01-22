@@ -21,17 +21,19 @@ class MilvusVecstore(Store):
                  collectionName="default",
                  vector_dimension=384,
                  storeContent: bool = False):
-        p(self.fmt.format('starting Milvus'))
+        self.storeContent=storeContent
+        p(f'MilvusVecstore, storeContent: {self.storeContent}')
         connections.connect("default",  address=address)
-        self.createCollection(collectionName, vector_dimension, storeContent)
+        self.createCollection(collectionName, vector_dimension)
+        
 
-    def createCollection(self, collectionName, vector_dimension, storeContent):
+    def createCollection(self, collectionName, vector_dimension):
         collectionExists = utility.has_collection(collectionName)
         p(f"Does collection [{collectionName}] exist in Milvus: {collectionExists}")
                 
         # if not collectionExists:
         fields: list
-        if (storeContent):
+        if (self.storeContent):
             fields = [
                 FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
                 FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=self.maxContentLength),
@@ -62,25 +64,38 @@ class MilvusVecstore(Store):
 
         self.collection.create_index("embeddings", index)
 
-    def put(self, key: object, value: numpy.ndarray):
-        toInsert = [
-            [key],
-            [value]
-        ]
+    def put(self, key: object, value: numpy.ndarray, content: str = None):
+        toInsert: list
+        if (self.storeContent):
+            content = content[0 : self.maxContentLength]
+            assert len(content) <= self.maxContentLength
+            toInsert = [
+                [key],
+                [content],
+                [value]
+            ]
+        else:
+            toInsert = [
+                [key],
+                [value]
+            ]
         insert_result = self.collection.insert(toInsert)
-        p(f"insert result {insert_result}")
-        
-    def put(self, key: object, value: numpy.ndarray, content: str):
-        content = content[0 : self.maxContentLength]
-        assert len(content) <= self.maxContentLength
-        toInsert = [
-            [key],
-            [content],
-            [value]
-        ]
-        insert_result = self.collection.insert(toInsert)
-        # return result
         # p(f"insert result {insert_result}")
+        
+    # def put(self, key: object, value: numpy.ndarray, content: str):
+    #     if (not self.storeContent):
+    #         self.put(key, value)
+    #     else:
+    #         content = content[0 : self.maxContentLength]
+    #         assert len(content) <= self.maxContentLength
+    #         toInsert = [
+    #             [key],
+    #             [content],
+    #             [value]
+    #         ]
+    #         insert_result = self.collection.insert(toInsert)
+    #         # return result
+    #         # p(f"insert result {insert_result}")
 
 
     def flush(self):
