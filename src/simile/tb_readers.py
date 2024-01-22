@@ -20,8 +20,105 @@ class FilenameAndContent:
             return relevantPath
         return f'{relevantPath}#{self.location}'
 
+class DlContent:
+    def getId(self) -> str:
+        pass
+    def text(self) -> str:
+        pass
+
+@dataclass
+class DlFile(DlContent):
+    '''
+        represents a dumped text file
+    '''
+    basedir: str
+    dir: str
+    filename: str
+    _text: str = None # cache
+    
+    def getId(this) -> str:
+        assert this.dir.startswith(this.basedir)
+        specificPath = this.dir[len(this.basedir):]
+        return f'{specificPath}/{this.filename}'
+    
+    def getCompletePath(this) -> str:
+        return os.path.join(this.dir, this.filename)
+    
+    def getTextbaseUrl(self) -> str:
+        return f'https://textbase.scriptorium.ro{self.getId()}'
+    
+
+    def text(self) -> str:
+        if self._text == None:
+            cpath = self.getCompletePath()
+            with open(cpath) as file:
+                self._text = file.read()
+        return self._text
+    
+    def paragraphs(self):
+        txt = self.text()
+        paras = txt.split('\n')
+        for i, para in enumerate(paras):
+            yield (i, para)
+    
+
+@dataclass
+class DlParagraph(DlContent):
+    file: DlFile
+    index: int
+    _text: str = None # text cache
+    
+    def getId(self) -> str:
+        return f'{self.file.getId()}#{self.index}'
+    
+
+    def text(self) -> str:
+        if self._text == None:
+            txt = self.file.text()
+            paras = txt.split('\n')
+            self._text = paras[self.index]
+        return self._text
+    
+    def sentences(self):
+        txt = self.text()
+        sentences = txt.split('.')
+        for i, sent in enumerate(sentences):
+            yield (i, sent)
+
+    
+@dataclass
+class DlSentence(DlContent):
+    paragraph: DlParagraph
+    index: int
+    _text: str = None
+        
+    def getId(self) -> str:
+        return f'{self.paragraph.getId()}-{self.index}'
+    
+    def text(self) -> str:
+        if self._text == None:
+            txt = self.paragraph.text()
+            self._text = txt.split('.')[self.index]
+        return self._text
+    
+    @staticmethod
+    def fromMilvusId(basedir: str, milvId: str) :
+        if not '#' in milvId:
+            raise Exception(f'id [{milvId}] should contain # character')
+        
+        filenameWithAnchor = os.path.basename(milvId)
+        dirname = os.path.dirname(milvId)
+        [filename, idxs] = filenameWithAnchor.split('#')
+        assert '-' in idxs
+        [idxPara, idxSentence] = idxs.split('-')
+        dltext = DlFile(basedir, os.path.join(basedir,dirname), filename)
+        para = DlParagraph(dltext, int(idxPara))
+        dlsentence = DlSentence(para, int(idxSentence))
+        return dlsentence
+
 @dataclass
 class TextbaseDownloads:
+    basedir: str
     
     def __init__(self, basedir="~/data/textbase-dl/"):
         self.basedir = os.path.expanduser(basedir)
@@ -30,47 +127,37 @@ class TextbaseDownloads:
     def files(self) :
         for root, dirs, files in os.walk(self.basedir):
             for file in files:
-                cmplPath = os.path.join(root, file)
-                yield cmplPath
-    
-
-    # returns 2-tuples of (filepath, content)
-    def chapters(self):     
-        for f in self.files():
-            with open(f) as file:
-                txt = file.read()
-                yield FilenameAndContent(path=f, content=txt)
+                yield DlFile(self.basedir, root, file) # cmplPath
                 
     def paragraphs(self):        
-        for ch in self.chapters():
-            txt = ch.content
-            paras = txt.split('\n')
-            i = 0
-            for p in paras:
-                if p.strip() != "":
-                    yield FilenameAndContent(path=ch.path, location="%d" % i, content=p)
-                i += 1
+        for dfile in self.files():
+            for i, para in dfile.paragraphs():
+                if para.strip() != "":
+                    yield DlParagraph(dfile, i, para)
 
     def sentences(self):
-        for ch in self.paragraphs():
-            txt = ch.content
-            sentences = txt.split('.')
-            i = 0
-            for s in sentences:
-                s = s.strip()
-                if s != "" and len(s) > 10:
-                    yield FilenameAndContent(path=ch.path, location="%s-%d" % (ch.location, i), content=s)
-                i += 1
+        for para in self.paragraphs():
+            for i, sentence in para.sentences():
+                sentence = sentence.strip()
+                yield DlSentence(para, i, sentence)
     
-    @staticmethod
-    def get_sentence(filenameId: str):
-        assert "/" in filenameId
-        assert "-" in filenameId
-        split = filenameId.split("/")
-        lastElem = split[-1]
-        split = lastElem.split("-")
-        paragraphNr, sentenceNr = split[0], split[1]
-        return TextbaseDownloads.get_sentence()
+    def significant_sentences(self):
+        for sentence in self.sentences():
+            txt = sentence.text()
+            words = [it for it in txt.split(' ') if it]
+            if txt.strip() != "" and len(txt) > 15 and len(words) > 3:
+                yield sentence
+            
+    
+    # @staticmethod
+    # def get_sentence(filenameId: str):
+    #     assert "/" in filenameId
+    #     assert "-" in filenameId
+    #     split = filenameId.split("/")
+    #     lastElem = split[-1]
+    #     split = lastElem.split("-")
+    #     paragraphNr, sentenceNr = split[0], split[1]
+    #     return TextbaseDownloads.get_sentence()
     
     @staticmethod
     def get_sentence(filenamePath: str, paragraphNr: int, sentenceNr: int):
@@ -88,7 +175,22 @@ def p(args): print(args)
 if __name__ == "__main__":
     tbdl = TextbaseDownloads()
     p(tbdl.files())
-    p(tbdl.chapters())
-    paths = [it.path for it in tbdl.chapters()]
+    # for f in tbdl.files():
+    #     p(f.getId())
+    # quit()
+    # p(tbdl.chapters())
+    paths = [it.getCompletePath for it in tbdl.files()]
     p(len(paths))
     assert len(paths) > 0
+
+    # quit()
+    
+    for sent in tbdl.significant_sentences():
+        p(sent.getId())
+        p(sent.paragraph.file.getCompletePath())
+        # p(sent.paragraph.getId())
+        # file = sent.paragraph.file
+        # p(sent.paragraph.file.getId())
+        # p(file.path)
+        # p(file.getCompletePath)
+        # p(f'{sent.paragraph.file.getId()} - {sent.index} - {len(sent.text())}')

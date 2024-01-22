@@ -39,8 +39,9 @@ class Main:
         p('done, flushing...')
         milv.flush()
         p('done, will create index...')
-        milv.createIndex_IVFFLAT_OnEmbeddings()
-        milv.collection.load()
+        milv.collection.compact()
+        milv.createIndex()
+        # milv.collection.load()
         
         resp = milv.collection.query(expr='id != ""', output_fields=['id'])
         # p(resp)
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     
     defaultCollectionName = "textbase_dl"
  
-    parser = argparse.ArgumentParser(description='Print the sum of two numbers')
+    parser = argparse.ArgumentParser(description='Upload a directory of tb downloads to Milvus')
     
     parser.add_argument('--dl', type=str, help='Textbase downloads directory', required=True)
     parser.add_argument('--col', type=str, help='Milvus collection name', default=defaultCollectionName)

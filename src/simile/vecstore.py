@@ -47,7 +47,7 @@ class EncoderFactory:
         return resp
 
 class VectorStoreFactory:
-        
+
     @staticmethod
     def inmemory() -> Store: 
         return InMemoryVectorStore()

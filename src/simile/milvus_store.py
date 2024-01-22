@@ -31,27 +31,29 @@ class MilvusVecstore(Store):
         collectionExists = utility.has_collection(collectionName)
         p(f"Does collection [{collectionName}] exist in Milvus: {collectionExists}")
                 
-        # if not collectionExists:
-        fields: list
-        if (self.storeContent):
-            fields = [
-                FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
-                FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=self.maxContentLength),
-                FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
-            ]
+        if collectionExists:
+            self.collection = Collection(collectionName)
         else:
-            fields = [
-                FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
-                FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
-            ]
+            fields: list
+            if (self.storeContent):
+                fields = [
+                    FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
+                    FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=self.maxContentLength),
+                    FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
+                ]
+            else:
+                fields = [
+                    FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
+                    FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
+                ]
 
-        schema = CollectionSchema(fields, "Embedding vectors representing text")
+            schema = CollectionSchema(fields, "Embedding vectors representing text")
 
-        p(f"Create collection [{collectionName}]")
-        self.collection = Collection(collectionName, schema, consistency_level="Strong")
+            p(f"created collection [{collectionName}]")
+            self.collection = Collection(collectionName, schema, consistency_level="Strong")
 
 
-    def finish(self):
+    def createIndex(self):
         self.createIndex_DISKANN_OnEmbeddings()
         # self.createIndex_IVFFLAT_OnEmbeddings()
 
