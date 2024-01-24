@@ -1,7 +1,6 @@
 from content_store import *
 from tb_readers import *
 from vecstore import *
-from pulea import *
 
 class Main:
 

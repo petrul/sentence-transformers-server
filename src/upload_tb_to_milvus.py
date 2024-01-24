@@ -2,57 +2,69 @@
 from simile.tb_readers import *
 from simile.milvus_store import *
 from simile.vecstore import *
+from simile.encoder import *
 from itertools import islice
 
 def p(args): print(args)
 
-class Main:    
-    def main(self, colName: str, store_content: bool):
-        enc = EncoderFactory.all_MiniLM_L6_v2()
-        milv = MilvusVecstore(collectionName=colName, storeContent=store_content)
-        # p(milv.listCollections())
-        milv.collection.compact()
-        p(milv.collection.primary_field)
-        p(milv.collection.is_empty)
-        p(milv.collection.num_entities)
+class Uploader:
+    
+    encoder: Encoder
+    collectionName: str
+    milvusVectore: MilvusVecstore
+    
+    
+    def __init__(self, textbaseDownloads: TextbaseDownloads, 
+                 collectionName: str, 
+                 encoder = EncoderFactory.all_MiniLM_L6_v2(),
+                 limit = -1) -> None:
+        self.encoder = encoder
+        self.collectionName = collectionName
+        self.textbaseDownloads = textbaseDownloads
+        self.limit = limit
+    
+    def upload(self, store_content: bool):
+        enc = self.encoder
+        colName = self.collectionName
         
-        tbdl = TextbaseDownloads()
+        self.milvusVectore = MilvusVecstore(collectionName=colName, storeContent=store_content)
+        milv = self.milvusVectore
+        milv.collection.compact()
+                
+        tbdl = self.textbaseDownloads
         p(f'will import from {tbdl.basedir}')
-        sentences = tbdl.sentences()
-        # sentences = islice(sentences, 200)
-        i = 0
-        for s in sentences:
-            # p (f"{i} : encoding {s.path} / {s.location} : [{s.content}]")
-            emb = enc.encode(s.content, show_progress_bar=False)
-            id = s.id(tbdl.basedir)
+        ssentences = tbdl.significant_sentences()
+        if self.limit > 0 : ssentences = islice(ssentences, self.limit)
+        
+        # i = 0
+        for i, s in enumerate(ssentences):
+            stext = s.text()
+            emb = enc.encode(stext, show_progress_bar=False)
+            id = s.getId()
             if store_content:
-                p (f'#{i} : {id} : len={len(s.content)}')
+                p (f'#{i} : {id} : len={len(stext)}')
             else:
                 p (f'#{i} : {id}')
                 
-            milv.put(id, emb, s.content)
+            milv.put(id, emb, stext)
             if (i % 5000 ==  0):
                 p("flushing")
                 milv.flush()
-            i += 1
+            # i += 1
             
         p('done, flushing...')
         milv.flush()
         p('done, will create index...')
         milv.collection.compact()
         milv.createIndex()
-        # milv.collection.load()
         
-        resp = milv.collection.query(expr='id != ""', output_fields=['id'])
-        # p(resp)
-        p(len(resp))
-        p(milv.count())
+        p(f'total entities: {milv.count()}')
 
 if __name__ == '__main__':
     import argparse
     import os
     
-    defaultCollectionName = "textbase_dl"
+    defaultCollectionName = "textbase_sentences"
  
     parser = argparse.ArgumentParser(description='Upload a directory of tb downloads to Milvus')
     
@@ -69,4 +81,6 @@ if __name__ == '__main__':
     if not os.path.isdir(tbdir):
         raise(Exception("not a directory: %s" % tbdir))
 
-    Main().main(colName=colName, store_content=store_content)
+    tbdl  = TextbaseDownloads(tbdir)
+    uploader = Uploader(colName)
+    uploader.upload(store_content=store_content)

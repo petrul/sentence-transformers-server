@@ -2,6 +2,7 @@
 
 import unittest
 from vecstore import *
+from encoder import *
 
 class StoreTest(unittest.TestCase):
             
@@ -12,7 +13,6 @@ class StoreTest(unittest.TestCase):
             'the dog is brown',
             'the cat meaws',
             'the sun burns hot today',
-            # 'câinele latră'
         ]
         ids = ["id%d" % i for i in range(len(sentences))]
         
@@ -31,7 +31,7 @@ class StoreTest(unittest.TestCase):
         
 
     def testInMemoryStore(self):
-        encoder = EncoderFactory.all_MiniLM_L6_v2()    
+        encoder = EncoderFactory.all_MiniLM_L6_v2()
 
         sentences = [
             'the dog barks',
@@ -83,8 +83,8 @@ def p(*args):
     print(*args)
 
 if __name__ == '__main__':
-    # unittest.main()
-    StoreTest().testGetPut()
+    unittest.main()
+    # StoreTest().testGetPut()
     # StoreTest().testInMemoryStore()
     
     

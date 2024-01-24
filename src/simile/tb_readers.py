@@ -1,6 +1,7 @@
 # textbase readers stuff
 from dataclasses import dataclass
 import os
+import pathlib
 
 # @dataclass
 # class FilenameAndContent:
@@ -128,11 +129,12 @@ class TextbaseDownloads:
     
     def __init__(self, basedir="~/data/textbase-dl/"):
         self.basedir = os.path.expanduser(basedir)
+        assert pathlib.Path(self.basedir).is_dir()
     
     # traverse root directory, and list directories as dirs and files as files
     def files(self) :
         for root, dirs, files in os.walk(self.basedir):
-            for file in files:
+            for file in sorted(files):
                 yield DlFile(self.basedir, root, file) # cmplPath
                 
     def paragraphs(self):        
@@ -141,6 +143,7 @@ class TextbaseDownloads:
                 if para.strip() != "":
                     yield DlParagraph(dfile, i, para)
 
+    # you probably do not want to use this but rather significant_sentences() instead.
     def sentences(self):
         for para in self.paragraphs():
             for i, sentence in para.sentences():
@@ -151,7 +154,7 @@ class TextbaseDownloads:
         for sentence in self.sentences():
             txt = sentence.text()
             words = [it for it in txt.split(' ') if it]
-            if txt.strip() != "" and len(txt) > 15 and len(words) > 3:
+            if txt.strip() != "" and len(txt) > 7 and len(words) > 1:
                 yield sentence
             
     

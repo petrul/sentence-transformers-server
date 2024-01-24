@@ -3,6 +3,7 @@ from simile.tb_readers import *
 from simile.milvus_store import *
 from simile.vecstore import *
 from itertools import islice
+from simile.encoder import EncoderFactory
 
 def p(*args): print(*args)
 
@@ -17,10 +18,11 @@ class Searcher:
         tbdl = TextbaseDownloads(dlbasedir)
         
         assert not milv.collection.is_empty
-        emb = enc.encode(query, show_progress_bar=False)
+        emb = enc.st.encode(query, show_progress_bar=False)
         milv.collection.load()
         search_params = {
-            "metric_type": "L2", 
+            # "metric_type": "L2", 
+            "metric_type": "IP", 
             "offset": 0, 
             "ignore_growing": False, 
             "params": {"nprobe": 20}
@@ -63,6 +65,9 @@ if __name__ == '__main__':
     if query_str.strip() == '':
         raise Exception('please provide a text to search')
     
+    p("******************")
+    p("* MILVUS SEARCHER")
+    p("******************")
     p(f'will use query [{query_str}]')
     p('=========')
     hits = Searcher(colName).search(basedir, query_str, max_results)
@@ -70,6 +75,6 @@ if __name__ == '__main__':
     for sent, dist  in hits:
         p('=========')
         p(f'{sent.getId()} - {dist} :')
-        p(f'{sent.paragraph.file.getCompletePath()}:')
-        p(f'{sent.paragraph.file.getTextbaseUrl()}:')
+        # p(f'{sent.paragraph.file.getCompletePath()} :')
+        p(f'{sent.paragraph.file.getTextbaseUrl()} :')
         p(f'\t{sent.text()}')

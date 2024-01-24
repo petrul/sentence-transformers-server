@@ -2,7 +2,7 @@ task :default => :run do
 end
 
 task :run do |t|
-    system 'uvicorn simile.restapi:app --reload'
+    shell 'uvicorn src.simile.restapi:app --reload'
 end
 
 task :unittest do |t|

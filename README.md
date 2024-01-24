@@ -1,4 +1,4 @@
-This is basically a SBERT 'client' which uploads data into milvus.
+This is basically a SBERT sentence_transformers 'client' which uploads data into milvus.
 
 ## Prereqs
 ```
