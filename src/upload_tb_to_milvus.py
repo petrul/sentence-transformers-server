@@ -36,6 +36,7 @@ class Uploader:
     
     def __init__(self, textbaseDownloads: TextbaseDownloads, 
                  collectionName: str, 
+                 address: str = 'localhost:19530',
                  encoder = EncoderFactory.all_MiniLM_L6_v2(),
                  limit = -1,
                  batchSize = 2000,
@@ -46,6 +47,7 @@ class Uploader:
         self.collectionName = collectionName
         self.textbaseDownloads = textbaseDownloads
         self.limit = limit
+        self.milvusServer=address
         self.batchSize = batchSize
         self.forceReimport = forceReimport
         self.importType = importType
@@ -58,7 +60,7 @@ class Uploader:
         enc = self.encoder
         colName = self.collectionName
         
-        self.milvusVectore = MilvusVecstore(collectionName=colName)
+        self.milvusVectore = MilvusVecstore(address=self.milvusServer, collectionName=colName)
         milv = self.milvusVectore
         milv.collection.compact()
                 
@@ -143,6 +145,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Upload a directory of tb downloads to Milvus')
     
     parser.add_argument('-d', type=str, help='Textbase downloads directory', required=True)
+    parser.add_argument('-a', type=str, help='Milvus server address', default='localhost:19530')
     parser.add_argument('-c', type=str, help='Milvus collection name', required=True)
     parser.add_argument('-t', type=str, help='Import type: sentence | paragraph', default='sentence')
     parser.add_argument('-f', type=bool, help='Force reimport', default=False)
@@ -154,6 +157,7 @@ if __name__ == '__main__':
     colName = args.c
     importTypeArg: str = args.t
     forceReimport = args.f
+    address = args.a
     
     importType: ImportType
     match importTypeArg.lower():
@@ -172,5 +176,5 @@ if __name__ == '__main__':
         raise(Exception("not a directory: %s" % tbdir))
 
     tbdl  = TextbaseDownloads(tbdir)
-    uploader = Uploader(tbdl, colName, forceReimport=forceReimport)
+    uploader = Uploader(tbdl, colName, address=address, forceReimport=forceReimport)
     uploader.upload()
