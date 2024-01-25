@@ -54,4 +54,8 @@ if __name__ == '__main__':
     tbtest = TextbaseReadersTest()
     # tbtest.testCountFiles()
     # tbtest.testSignificantSentences()
-    tbtest.testIdsStartWithAuthors()
+    # tbtest.testIdsStartWithAuthors()
+    
+    tbdl = TextbaseDownloads('~/data/textbase-dl')
+    for s in tbdl.significant_sentences():
+        p(s.getId())

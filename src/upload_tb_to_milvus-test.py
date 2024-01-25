@@ -9,10 +9,10 @@ class UploaderTest(unittest.TestCase):
     textbase_downloads_dir = os.path.abspath(f'{scriptDir()}/../../tests/resources/textbase-dl')
     
             
-    def testUpload(self):
+    def testUploadSentences(self):
         tbdl = TextbaseDownloads(self.textbase_downloads_dir)
         
-        colname = 'test_' + randomAlphabetic(10)
+        colname = 'test_sentences_' + randomAlphabetic(10)
         
         limit = 20
         uploader = Uploader(tbdl, colname, limit=limit, batchSize=3, forceReimport=False)
@@ -33,7 +33,25 @@ class UploaderTest(unittest.TestCase):
         
         uploader.milvusVectore.collection.drop()
         
+    def testUploadParagraphs(self):
+        tbdl = TextbaseDownloads(self.textbase_downloads_dir)
+        
+        colname = 'test_paras_' + randomAlphabetic(10)
+        
+        limit = 5
+        uploader = Uploader(tbdl, colname, limit=limit, 
+                            batchSize=3, forceReimport=False, 
+                            importType=ImportType.PARAGRAPH)
+        
+        # 1. all insert
+        uploader.upload()
+        assert uploader.milvusVectore.count() == limit
+        
+        uploader.milvusVectore.collection.drop()
+       
+        
 
 if __name__ == '__main__':
 
-    UploaderTest().testUpload()
+    # UploaderTest().testUploadSentences()
+    UploaderTest().testUploadParagraphs()

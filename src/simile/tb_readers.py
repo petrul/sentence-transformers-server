@@ -134,7 +134,8 @@ class TextbaseDownloads:
     # traverse root directory, and list directories as dirs and files as files
     def files(self) :
         for root, dirs, files in os.walk(self.basedir):
-            for file in sorted(files):
+            dirs.sort()
+            for file in files:
                 yield DlFile(self.basedir, root, file) # cmplPath
                 
     def paragraphs(self):        

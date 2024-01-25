@@ -14,7 +14,7 @@ class MilvusVecstore(Store):
     fmt = "\n=== {:30} ===\n"    
     collection: Collection
     maxContentLength=5000 # varchar length for field content
-    collectionAlreadyExisted: bool  # true if collection was already there
+    collectionAlreadyExists: bool  # true if collection was already there
     
     # vector dim is the size of the vectors that you expect to store
     def __init__(self, address = "localhost:19530", 
@@ -28,10 +28,10 @@ class MilvusVecstore(Store):
         
 
     def createCollection(self, collectionName, vector_dimension):
-        self.collectionAlreadyExisted = utility.has_collection(collectionName)
-        p(f"Does collection [{collectionName}] exist in Milvus: {self.collectionAlreadyExisted}")
+        self.collectionAlreadyExists = utility.has_collection(collectionName)
+        p(f"Does collection [{collectionName}] exist in Milvus: {self.collectionAlreadyExists}")
                 
-        if self.collectionAlreadyExisted:
+        if self.collectionAlreadyExists:
             self.collection = Collection(collectionName)
             p(f'loading collection {collectionName} with {self.collection.num_entities} existing entities')
             self.collection.load()

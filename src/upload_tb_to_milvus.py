@@ -21,25 +21,34 @@ class StopWatch:
     def __str__(self) -> str:
         return str(".2f" % self.took)
 
+import enum
+class ImportType(enum.Enum):
+    SENTENCE=0
+    PARAGRAPH=1
+
 class Uploader:
     
     encoder: Encoder
     collectionName: str
     milvusVectore: MilvusVecstore
-    batchSize: int
+    batchSize: int # how many entities will be sent at once to encoding and to milvus.
+    importType: ImportType
     
     def __init__(self, textbaseDownloads: TextbaseDownloads, 
                  collectionName: str, 
                  encoder = EncoderFactory.all_MiniLM_L6_v2(),
                  limit = -1,
-                 batchSize = 1000,
-                 forceReimport = True) -> None:
+                 batchSize = 2000,
+                 forceReimport = True,
+                 importType: ImportType = ImportType.SENTENCE
+                 ) -> None:
         self.encoder = encoder
         self.collectionName = collectionName
         self.textbaseDownloads = textbaseDownloads
         self.limit = limit
         self.batchSize = batchSize
         self.forceReimport = forceReimport
+        self.importType = importType
         p(f'\t forceReimport = {self.forceReimport}')
     
     def upload(self):
@@ -55,7 +64,14 @@ class Uploader:
                 
         tbdl = self.textbaseDownloads
         p(f'will import from {tbdl.basedir}')
-        ssentences = tbdl.significant_sentences()
+        
+        ssentences = None
+        match self.importType:
+            case  ImportType.SENTENCE:
+                ssentences = tbdl.significant_sentences()
+            case ImportType.PARAGRAPH:
+                ssentences = tbdl.paragraphs()
+
         if self.limit > 0 : ssentences = islice(ssentences, self.limit)
         
         batchCounter = 0
@@ -70,7 +86,7 @@ class Uploader:
             
             # see what data can be skipped if the collection is not new and
             # the forceReimport flag is set
-            if self.milvusVectore.collectionAlreadyExisted and not self.forceReimport:
+            if self.milvusVectore.collectionAlreadyExists and not self.forceReimport:
                 # see if some of the data is not already in there
                 existingIds = [it['id'] for it in self.milvusVectore.idsExist(ids)]
                 notexistingIds = [it for it in ids if not it in existingIds]
@@ -87,6 +103,7 @@ class Uploader:
                 texts = [it.text() for it in crtBuffer]
                 ids = [it.getId() for it in crtBuffer] # again because crtBuffer may have changed
                 
+                p(f'sending {len(ids)} text chunks to encoder...')
                 embeddingWatch = StopWatch().start()
                 embeddings = enc.encode(sentences=texts, show_progress_bar=False)
                 assert len(embeddings) == len(texts)
@@ -120,23 +137,40 @@ if __name__ == '__main__':
     import argparse
     import os
     
-    defaultCollectionName = "textbase_sentences"
+    # defaultCollectionName = "textbase_sentences"
+    defaultImportType = 'sentence'
  
     parser = argparse.ArgumentParser(description='Upload a directory of tb downloads to Milvus')
     
-    parser.add_argument('--dl', type=str, help='Textbase downloads directory', required=True)
-    parser.add_argument('--col', type=str, help='Milvus collection name', default=defaultCollectionName)
+    parser.add_argument('-d', type=str, help='Textbase downloads directory', required=True)
+    parser.add_argument('-c', type=str, help='Milvus collection name', required=True)
+    parser.add_argument('-t', type=str, help='Import type: sentence | paragraph', default='sentence')
+    parser.add_argument('-f', type=bool, help='Force reimport', default=False)
     # parser.add_argument('--store_content', type=bool, help='Store content together with the vectors', default=False)
 
     args = parser.parse_args()
 
-    tbdir = os.path.expanduser(args.dl)
-    colName = args.col
+    tbdir = os.path.expanduser(args.d)
+    colName = args.c
+    importTypeArg: str = args.t
+    forceReimport = args.f
+    
+    importType: ImportType
+    match importTypeArg.lower():
+        case 'sentence' | 'sent' | 's':
+            importType = ImportType.SENTENCE
+        case 'paragraph' | 'para' | 'p':
+            importType = ImportType.PARAGRAPH
+        case _:
+            raise Exception(f'unknown import type {importTypeArg}, sentence or paragraph')
+            
+    # p(importType)
+    # quit()
     # store_content: bool = args.store_content
     
     if not os.path.isdir(tbdir):
         raise(Exception("not a directory: %s" % tbdir))
 
     tbdl  = TextbaseDownloads(tbdir)
-    uploader = Uploader(colName)
+    uploader = Uploader(tbdl, colName, forceReimport=forceReimport)
     uploader.upload()
