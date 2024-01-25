@@ -11,14 +11,29 @@ class UploaderTest(unittest.TestCase):
             
     def testUpload(self):
         tbdl = TextbaseDownloads(self.textbase_downloads_dir)
+        
         colname = 'test_' + randomAlphabetic(10)
-        p(colname)
+        
         limit = 20
-        uploader = Uploader(tbdl, colname, limit=limit)
-        uploader.upload(False)
+        uploader = Uploader(tbdl, colname, limit=limit, batchSize=3, forceReimport=False)
+        
+        # 1. all insert
+        uploader.upload()
         assert uploader.milvusVectore.count() == limit
+        
+        # 2. all skip
+        uploader.upload() # again, all records should be skipped
+        assert uploader.milvusVectore.count() == limit
+        
+        
+        # 3. now first are already inserted while the latter half is new
+        limit = 40
+        uploader = Uploader(tbdl, colname, limit=limit, batchSize=10, forceReimport=False)
+        uploader.upload() # again, all records should be skipped
+        
         uploader.milvusVectore.collection.drop()
-
+        
 
 if __name__ == '__main__':
+
     UploaderTest().testUpload()

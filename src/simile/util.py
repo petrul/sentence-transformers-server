@@ -12,3 +12,7 @@ def randomAlphabetic(n = 10) -> str:
     import random, string
     resp = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(n))
     return resp
+
+if __name__ == '__main__':
+    a = ['a', 'b', "cd"]
+    print(a)

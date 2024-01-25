@@ -1,5 +1,6 @@
 from sentence_transformers import SentenceTransformer, util
 from dataclasses import dataclass
+from typing import List
 
 def p(*args): print(*args)
 
@@ -8,8 +9,8 @@ class Encoder:
     name: str
     st: SentenceTransformer
     
-    def encode(self, text: list[str], **args):
-        return self.st.encode(text, **args)
+    def encode(self, sentences: str| list[str], **args):
+        return self.st.encode(sentences=sentences, **args)
 
 class EncoderFactory: 
 
