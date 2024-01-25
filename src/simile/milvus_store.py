@@ -17,16 +17,14 @@ class MilvusVecstore(Store):
     collectionAlreadyExists: bool  # true if collection was already there
     
     # vector dim is the size of the vectors that you expect to store
-    def __init__(self, address = "localhost:19530", 
+    def __init__(self, 
+                 address = "localhost:19530",
                  collectionName="default",
                  vector_dimension=384):
-        # self.storeContent=storeContent
-        # p(f'MilvusVecstore, storeContent: {self.storeContent}')
+        p(f'MilvusVecstore @{address}')
         connections.connect("default",  address=address)
         self.createCollection(collectionName, vector_dimension)
         
-        
-
     def createCollection(self, collectionName, vector_dimension):
         self.collectionAlreadyExists = utility.has_collection(collectionName)
         p(f"Does collection [{collectionName}] exist in Milvus: {self.collectionAlreadyExists}")

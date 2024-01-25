@@ -9,12 +9,19 @@ def p(*args): print(*args)
 
 class Searcher:
     
-    def __init__(self, colectionName) -> None:
+    milvusAdress: str
+    
+    def __init__(self, colectionName, milvusAddress: str = 'localhost:19530') -> None:
         self.colectionName  = colectionName
+        self.milvusAddress = milvusAddress
       
-    def search(self,  dlbasedir, query: str, max_results: int = 10):
+    def search(self,  
+               dlbasedir, 
+               query: str, 
+               max_results: int = 10,
+               ):
         enc = EncoderFactory.all_MiniLM_L6_v2()
-        milv = MilvusVecstore(collectionName=self.colectionName, storeContent=False)
+        milv = MilvusVecstore(collectionName=self.colectionName, address=self.milvusAddress)
         tbdl = TextbaseDownloads(dlbasedir)
         
         assert not milv.collection.is_empty
@@ -61,6 +68,7 @@ if __name__ == '__main__':
     colName = args.collection
     basedir = os.path.expanduser(args.dl)
     max_results = args.n
+    milvusAddress = args.address
 
     if query_str.strip() == '':
         raise Exception('please provide a text to search')
@@ -68,13 +76,14 @@ if __name__ == '__main__':
     p("******************")
     p("* MILVUS SEARCHER")
     p("******************")
-    p(f'will use query [{query_str}]')
+    p(f'<( Query )> : \n\n[{query_str}]\n')
     p('=========')
-    hits = Searcher(colName).search(basedir, query_str, max_results)
+    hits = Searcher(colName, milvusAddress=milvusAddress).search(basedir, query_str, max_results)
     
-    for sent, dist  in hits:
-        p('=========')
-        p(f'{sent.getId()} - {dist} :')
+    for (i, (sent, dist))  in enumerate(hits):
+        p(f'<( #{i + 1} )> {sent.paragraph.file.getTextbaseUrl()} - {dist} :\n')
+        # p(f'{sent.getId()} - {dist} :')
         # p(f'{sent.paragraph.file.getCompletePath()} :')
-        p(f'{sent.paragraph.file.getTextbaseUrl()} :')
-        p(f'\t{sent.text()}')
+        # p(f'{sent.paragraph.file.getTextbaseUrl()} - {dist} :')
+        
+        p(f'\t{sent.text()}\n')
