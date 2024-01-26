@@ -49,9 +49,27 @@ class UploaderTest(unittest.TestCase):
         
         uploader.milvusVectore.collection.drop()
        
+    def testLastImportBookmark(self):
+        libmk = LastImportBookmark()
+        libmk.delete()
+        assert not libmk.exists()
+        text = randomAlphabetic(10)
+        libmk.setLastImport(text)
+        assert libmk.exists()
+        assert libmk.getLastImport() == text
+        assert libmk.getLastImport() == text # again
+        text2 = randomAlphabetic(12)
+        libmk.setLastImport(text2)
+        assert not libmk.getLastImport() == text
+        assert libmk.getLastImport() == text2
+        
+        libmk.delete()
+        assert not libmk.exists()
         
 
 if __name__ == '__main__':
 
     # UploaderTest().testUploadSentences()
-    UploaderTest().testUploadParagraphs()
+    # UploaderTest().testUploadParagraphs()
+    UploaderTest().testLastImportBookmark()
+    

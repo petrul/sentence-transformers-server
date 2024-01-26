@@ -28,8 +28,8 @@ class Searcher:
         emb = enc.st.encode(query, show_progress_bar=False)
         milv.collection.load()
         search_params = {
-            # "metric_type": "L2", 
-            "metric_type": "IP", 
+            "metric_type": "L2", 
+            # "metric_type": "IP", 
             "offset": 0, 
             "ignore_growing": False, 
             "params": {"nprobe": 20}

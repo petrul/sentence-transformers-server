@@ -34,7 +34,7 @@ if __name__ == '__main__':
     # defaultCollectionName = "textbase_dl"
  
     parser = argparse.ArgumentParser(description='Milvus tool')
-        
+
     # parser.add_argument('-d', type=str, help='Textbase downloads directory', default='~/data/textbase-dl')
     parser.add_argument('-a', type=str, help='Milvus server address', default="localhost:19530")
     parser.add_argument('-c', type=str, help='Milvus collection name', required=True)

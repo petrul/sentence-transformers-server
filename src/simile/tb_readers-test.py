@@ -51,10 +51,8 @@ class TextbaseReadersTest(unittest.TestCase):
 
 
 if __name__ == '__main__':    
-    tbtest = TextbaseReadersTest()
-    # tbtest.testCountFiles()
-    # tbtest.testSignificantSentences()
-    # tbtest.testIdsStartWithAuthors()
+    test = TextbaseReadersTest()
+    # test.tes
     
     tbdl = TextbaseDownloads('~/data/textbase-dl')
     for s in tbdl.significant_sentences():

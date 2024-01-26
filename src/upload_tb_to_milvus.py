@@ -4,27 +4,39 @@ from simile.milvus_store import *
 from simile.vecstore import *
 from simile.encoder import *
 from itertools import islice
-from simile.util import p
-import time
+from simile.util import p, StopWatch
 
-class StopWatch:
-    
-    def start(self):
-        self.timestamp_start = time.time()
-        return self
-        
-    def stop(self):
-        self.timestamp_end = time.time()
-        self.took = self.timestamp_end - self.timestamp_start
-        return self.took
-    
-    def __str__(self) -> str:
-        return str(".2f" % self.took)
 
 import enum
 class ImportType(enum.Enum):
     SENTENCE=0
     PARAGRAPH=1
+
+# this saves the last import in a local file, can be use for --resume function
+class LastImportBookmark:
+    
+    filelocation = os.path.expanduser('~/.milvus-uploader-last-import')
+    
+    def setLastImport(self, lastImport: str):
+        f = open(self.filelocation, "w")
+        f.write(lastImport)
+        f.close()
+        
+    def getLastImport(self) -> str:
+        f = open(self.filelocation, "r")
+        if not self.exists():
+            return None
+        resp = f.read()
+        f.close()
+        return resp
+        
+    def exists(self) -> bool:
+        return os.path.exists(self.filelocation)
+        
+    def delete(self):
+        if self.exists():
+            os.remove(self.filelocation)
+        
 
 class Uploader:
     
@@ -62,7 +74,7 @@ class Uploader:
         
         self.milvusVectore = MilvusVecstore(address=self.milvusServer, collectionName=colName)
         milv = self.milvusVectore
-        milv.collection.compact()
+        # milv.collection.compact()
                 
         tbdl = self.textbaseDownloads
         p(f'will import from {tbdl.basedir}')
@@ -176,5 +188,5 @@ if __name__ == '__main__':
         raise(Exception("not a directory: %s" % tbdir))
 
     tbdl  = TextbaseDownloads(tbdir)
-    uploader = Uploader(tbdl, colName, address=address, forceReimport=forceReimport)
+    uploader = Uploader(tbdl, colName, address=address, forceReimport=forceReimport, importType=importType)
     uploader.upload()
