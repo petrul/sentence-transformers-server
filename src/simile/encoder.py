@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy
 import pickle
 import os
-import util
+from .util import *
 
 class Cache:
     def put(self, key: str, value: numpy.ndarray):
@@ -60,7 +60,8 @@ class VectorCache(Cache):
         fh.close()
         return resp
     
-    def rm_rf_cachedir(self, iUnderstandThatThisIsAPotentiallyDangerousOperation: bool = False):
+    def rm_rf_cachedir(self, iUnderstandThatThisIsAPotentiallyDestructiveOperation: bool = False):
+        if not iUnderstandThatThisIsAPotentiallyDestructiveOperation: raise Exception()
         import shutil
         shutil.rmtree(self.cachedir)
 
@@ -81,7 +82,7 @@ class Encoder:
         sha1encoder.update(text.encode('utf-8'))
         return sha1encoder.hexdigest()            
     
-    def encode(self, sentences: list[str], **args):
+    def encode(self, sentences: list[str], **args) -> list[numpy.ndarray]:
         j2i = {}
         uncached_sentences = []
         resp = list(range(len(sentences)))
@@ -116,6 +117,6 @@ class EncoderFactory:
     def all_MiniLM_L6_v2(cache = Cache()):
         name = 'all-MiniLM-L6-v2'
         st = SentenceTransformer(name)
-        util.p('model [%s], with max_seq_length %d' % (name, st.get_max_seq_length()))        
+        p('model [%s], with max_seq_length %d' % (name, st.get_max_seq_length()))        
         return Encoder(name, st, cache=cache)
 

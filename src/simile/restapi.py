@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from .encoder import *
+from .util import *
 
 app = FastAPI()
 
@@ -13,17 +14,17 @@ app = FastAPI()
 
 
 
-all_MiniLM_L6_v2 =EncoderFactory.all_MiniLM_L6_v2()
+NAME_ALL_MINILM_L6_V2='all_MiniLM_L6_v2'
+
+all_MiniLM_L6_v2 = EncoderFactory.all_MiniLM_L6_v2()
 models = {
-    'all_MiniLM_L6_v2': all_MiniLM_L6_v2
+    NAME_ALL_MINILM_L6_V2: all_MiniLM_L6_v2
 }
 
-def p(*args): print(*args)
-
 @app.post("/api/models/{model_id}/encode")
-def post_encode_(model_id: str, body: list[str]):
+def post_encode_(body: list[str], model_id: str = NAME_ALL_MINILM_L6_V2):
     if not model_id in models.keys():
         raise HTTPException(status_code=404, detail="Model not found")
     encoder = models[model_id]
     resp = encoder.encode(body)
-    return resp.tolist()
+    return [ it.tolist() for it in resp]

@@ -1,8 +1,8 @@
 # from 'store'
 
 import unittest
-from vecstore import *
-from encoder import *
+from .vecstore import *
+from .encoder import *
 
 class StoreTest(unittest.TestCase):
             

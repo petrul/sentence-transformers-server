@@ -2,7 +2,7 @@ task :default => :run do
 end
 
 task :run do |t|
-    shell 'uvicorn src.simile.restapi:app --reload'
+    shell 'uvicorn src.simile.restapi:app  --port 11111  --reload'
 end
 
 task :unittest do |t|

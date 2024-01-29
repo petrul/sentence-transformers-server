@@ -1,19 +1,18 @@
 import unittest
-import util
-from util import p
-import encoder
+from .util import *
+from .encoder import *
 
 class EncoderTest(unittest.TestCase):
     import tempfile
     import os
     
-    tmp_dir = os.path.join(tempfile.gettempdir(), 'TextbaseReadersTest_' + util.randomAlphabetic(3))
-    res_dir = os.path.abspath(f'{util.scriptDir()}/../../tests/resources/textbase-dl')
+    tmp_dir = os.path.join(tempfile.gettempdir(), 'TextbaseReadersTest_' + randomAlphabetic(3))
+    res_dir = os.path.abspath(f'{scriptDir()}/../../tests/resources/textbase-dl')
             
     def testCaching(self):
         
-        cache: encoder.VectorCache = encoder.VectorCache(self.tmp_dir)
-        enc = encoder.EncoderFactory.all_MiniLM_L6_v2(cache=cache)
+        cache: VectorCache = VectorCache(self.tmp_dir)
+        enc = EncoderFactory.all_MiniLM_L6_v2(cache=cache)
         
         sentences = [
             "foaie verde",
@@ -35,7 +34,7 @@ class EncoderTest(unittest.TestCase):
         for i, _ in enumerate(resp1):
             resp1[i] == resp2[i]
         
-        cache.rm_rf_cachedir(iUnderstandThatThisIsAPotentiallyDangerousOperation=True)
+        cache.rm_rf_cachedir(iUnderstandThatThisIsAPotentiallyDestructiveOperation=True)
         
         
 
@@ -46,5 +45,3 @@ if __name__ == '__main__':
     test.testCaching()
     # import hashlib
     # sha1encoder = hashlib.sha1()
-    # sha1encoder.update('foaie  verde1'.encode('utf-8'))
-    # p(sha1encoder.hexdigest())

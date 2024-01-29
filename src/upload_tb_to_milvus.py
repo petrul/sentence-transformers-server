@@ -45,6 +45,7 @@ class Uploader:
     milvusVectore: MilvusVecstore
     batchSize: int # how many entities will be sent at once to encoding and to milvus.
     importType: ImportType
+    milvusUploadDir = os.path.expanduser('~/docker-volumes-nobkp/milvus/milvus/data/uploads')
     
     def __init__(self, textbaseDownloads: TextbaseDownloads, 
                  collectionName: str, 
@@ -130,7 +131,12 @@ class Uploader:
                 
                 milvInsertionwatch = StopWatch().start()
                 
-                milv.putAll(ids, embeddings)
+                # milv.putAll(ids, embeddings)
+                milv.bulkUploadFiles(os.path.join(self.milvusUploadDir, enc.name),
+                                     batchCounter, 
+                                     ids, 
+                                     embeddings)
+                
                 counterUploaded += len(embeddings)
                 
                 milv.flush()
@@ -166,10 +172,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     tbdir = os.path.expanduser(args.d)
-    colName = args.c
-    importTypeArg: str = args.t
-    forceReimport = args.f
-    address = args.a
+    colName                 = args.c
+    importTypeArg: str      = args.t
+    forceReimport           = args.f
+    address                 = args.a
     
     importType: ImportType
     match importTypeArg.lower():
@@ -179,11 +185,7 @@ if __name__ == '__main__':
             importType = ImportType.PARAGRAPH
         case _:
             raise Exception(f'unknown import type {importTypeArg}, sentence or paragraph')
-            
-    # p(importType)
-    # quit()
-    # store_content: bool = args.store_content
-    
+                
     if not os.path.isdir(tbdir):
         raise(Exception("not a directory: %s" % tbdir))
 

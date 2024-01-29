@@ -1,6 +1,6 @@
 import unittest
-from tb_readers import *
-from util import *
+from .tb_readers import *
+from .util import *
 from itertools import islice
 
 class TextbaseReadersTest(unittest.TestCase):

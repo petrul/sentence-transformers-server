@@ -8,7 +8,6 @@ import os
 class UploaderTest(unittest.TestCase):
     textbase_downloads_dir = os.path.abspath(f'{scriptDir()}/../../tests/resources/textbase-dl')
     
-            
     def testUploadSentences(self):
         tbdl = TextbaseDownloads(self.textbase_downloads_dir)
         
