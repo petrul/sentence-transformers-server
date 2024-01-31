@@ -24,20 +24,19 @@ class MilvusVecstore(Store):
     def __init__(self, 
                  address = "localhost:19530",
                  collectionName="default",
-                 vector_dimension=384):
+                 vector_dimension=384,
+                 consistency_level="Eventually"
+                 ):
         p(f'MilvusVecstore @{address}')
         connections.connect("default",  address=address)
-        self.createCollection(collectionName, vector_dimension)
+        self.createCollection(collectionName, vector_dimension, consistency_level)
         
-    def createCollection(self, collectionName, vector_dimension):
+    def createCollection(self, collectionName, vector_dimension, consistency_level):
         self.collectionAlreadyExists = utility.has_collection(collectionName)
         p(f"Does collection [{collectionName}] exist in Milvus: {self.collectionAlreadyExists}")
                 
         if self.collectionAlreadyExists:
             self.collection = Collection(collectionName)
-            # p(f'loading collection {collectionName} with {self.collection.num_entities} existing entities')
-            # self.collection.load()
-
         else:
             fields = [
                 FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
@@ -47,7 +46,9 @@ class MilvusVecstore(Store):
             schema = CollectionSchema(fields, "Embedding vectors representing text")
 
             p(f"created collection [{collectionName}]")
-            self.collection = Collection(collectionName, schema, consistency_level="Strong")
+            self.collection = Collection(collectionName, 
+                                         schema, 
+                                         consistency_level=consistency_level)
 
 
     def createIndex(self):
