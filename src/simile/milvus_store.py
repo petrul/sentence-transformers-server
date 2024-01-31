@@ -1,4 +1,5 @@
-from .vecstore import Store
+from .vecstore import *
+from .minio_is_a_map import *
 import shutil
 import os
 
@@ -34,18 +35,10 @@ class MilvusVecstore(Store):
                 
         if self.collectionAlreadyExists:
             self.collection = Collection(collectionName)
-            p(f'loading collection {collectionName} with {self.collection.num_entities} existing entities')
-            self.collection.load()
+            # p(f'loading collection {collectionName} with {self.collection.num_entities} existing entities')
+            # self.collection.load()
 
         else:
-            fields: list
-            # if (self.storeContent):
-            #     fields = [
-            #         FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
-            #         FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=self.maxContentLength),
-            #         FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
-            #     ]
-            # else:
             fields = [
                 FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=500),
                 FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=vector_dimension)
@@ -58,25 +51,26 @@ class MilvusVecstore(Store):
 
 
     def createIndex(self):
-        self.createIndex_DISKANN_OnEmbeddings()
+        # self.createIndex_DISKANN_OnEmbeddings()
         # self.createIndex_IVFFLAT_OnEmbeddings()
+        raise Exception('unimpl')
 
     # NB: this might eat up RAM
-    def createIndex_IVFFLAT_OnEmbeddings(self):
+    def createIndex_IVFFLAT_L2_OnEmbeddings(self, metric_type = 'L2', nlist = 128):
         print(self.fmt.format("Start Creating index IVF_FLAT"))
         index = {
                 "index_type": "IVF_FLAT",
-                "metric_type": "L2",
-                "params": {"nlist": 128},
+                "metric_type": metric_type,
+                "params": {"nlist": nlist},
             }
 
         self.collection.create_index("embeddings", index)
 
-    def createIndex_DISKANN_OnEmbeddings(self):
+    def createIndex_DISKANN_L2_OnEmbeddings(self, metric_type  = 'L2'):
         print(self.fmt.format("Start Creating index DISKANN"))
         index_params = {
             "index_type": "DISKANN",
-            "metric_type": "L2",
+            "metric_type": metric_type,
             "params": {}
         }
 
@@ -90,11 +84,28 @@ class MilvusVecstore(Store):
             keys,
             values
         ]
-        insert_result = self.collection.insert(data)
+        # insert_result = self.collection.insert(data)
+        insert_result = self.collection.ins
         return insert_result
 
-    def bulkUploadFiles(self, uploadDir: str, batchCounter: int, keys: list[object], values: list[numpy.ndarray]):
-        if not os.path.exists(uploadDir): os.makedirs(uploadDir)
+
+
+
+    def bulkUploadLocalFS_rowbasedJson(self, 
+        # milvusDataDir: str,
+        minioBucket: MinioBucket,
+        batchCounter: int, 
+        keys: list[object], 
+        values: list[numpy.ndarray],
+        # milvusDockerDir: str  = '/var/lib/milvus'
+        ) -> int:
+        '''
+            @param uploadDir is the root of the milvus mount outside Docker
+            @param milvusDockerDir is the root of the milvus mount inside Docker
+        '''
+
+
+        # if not os.path.exists(milvusDataDir): os.makedirs(milvusDataDir)
         # import numpy
         # numpy.save('batch.npy', numpy.array([101, 102, 103, 104, 105]))
         # numpy.save('word_count.npy', numpy.array([13, 25, 7, 12, 34]))
@@ -119,20 +130,26 @@ class MilvusVecstore(Store):
             "rows": rows
         }
         
-        dumpName = f'{self.collection.name}-#{batchCounter}.json'
-        with open(dumpName, "w" ) as fh:
-            json.dump( data , fh )
-            
+        jsonBucketObjName = f'{self.collection.name}-#{batchCounter}.json'
+        # dumpPath = os.path.join(milvusDataDir, dumpName)
+        # with open(dumpPath, "w" ) as fh:
+        jsondata = json.dumps(data)
+        minioBucket[jsonBucketObjName] = ContentAndMetadata.fromJson(jsondata)
+        
+        # dockerDumpPath = os.path.join(milvusDockerDir, dumpName)
         # from pymilvus import utility
         task_id = utility.do_bulk_insert(
             collection_name=self.collection.name,
             is_row_based=True,
-            files=[ dumpName ]
+            #         /var/lib/milvus/data/uploads/all-MiniLM-L6-v2/test_sentences_RLOVvJAsG0-#0.json
+            files=[ jsonBucketObjName ]
         )
         self.print_task(task_id)
+        return task_id
         
     def print_task(self, id: int):
         task = utility.get_bulk_insert_state(task_id=id)
+        print("Task id:", id)
         print("Task state:", task.state_name)
         print("Imported files:", task.files)
         print("Collection name:", task.collection_name)
@@ -149,8 +166,7 @@ class MilvusVecstore(Store):
         self.collection.flush()
 
     def listIds(self):
-        # self.collection.search
-        pass
+        raise Exception('unimpl')
     
     # returns, amongst the given list of ids, those that actually exist in the collection
     def idsExist(self, ids: list[str]):
@@ -167,4 +183,12 @@ class MilvusVecstore(Store):
 def p(args): print(args)
         
 if __name__ == '__main__':
-    pass    
+    MilvusVecstore()
+    # connections.connect("default",  address='localhost:19530')
+    # task_id = utility.do_bulk_insert(
+    #     collection_name='foaie verde',
+    #     is_row_based=True,
+    #     #         /var/lib/milvus/data/uploads/all-MiniLM-L6-v2/test_sentences_RLOVvJAsG0-#0.json
+    #     # files=[ f'/var/lib/milvus/{os.path.basename(uploadDir)}/{dumpName}'  ]
+    #     # files = ['/var/lib/milvus/test_sentences_RLOVvJAsG0-#0.json']
+    # )

@@ -125,6 +125,10 @@ class DlSentence(DlContent):
 
 @dataclass
 class TextbaseDownloads:
+    '''
+        models a download dump of textbase, which is really lot of .txt files with a 
+        naming convention, of the whole Textbase site.
+    '''
     basedir: str
     
     def __init__(self, basedir="~/data/textbase-dl/"):

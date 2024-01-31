@@ -5,6 +5,7 @@ from simile.vecstore import *
 from simile.encoder import *
 from itertools import islice
 from simile.util import p, StopWatch
+from simile.minio_is_a_map import *
 
 
 import enum
@@ -39,32 +40,40 @@ class LastImportBookmark:
         
 
 class Uploader:
-    
+    '''
+        bulk uploads data into milvus.
+        it does not care about already existing data. simply take all incoming 
+        vectors, generates bulk files to import into milvus.
+        no complicated logic to be kept into Python.
+    '''
     encoder: Encoder
     collectionName: str
     milvusVectore: MilvusVecstore
     batchSize: int # how many entities will be sent at once to encoding and to milvus.
     importType: ImportType
-    milvusUploadDir = os.path.expanduser('~/docker-volumes-nobkp/milvus/milvus/data/uploads')
+    # milvusDataDir = os.path.expanduser('~/docker-volumes-nobkp/milvus/milvus/')
+    bucket: MinioBucket
     
     def __init__(self, textbaseDownloads: TextbaseDownloads, 
                  collectionName: str, 
+                 minio: MinioServer,
                  address: str = 'localhost:19530',
                  encoder = EncoderFactory.all_MiniLM_L6_v2(),
                  limit = -1,
                  batchSize = 2000,
-                 forceReimport = True,
+                #  forceReimport = True,
                  importType: ImportType = ImportType.SENTENCE
                  ) -> None:
+        self.bucket = minio['a-bucket']
         self.encoder = encoder
         self.collectionName = collectionName
         self.textbaseDownloads = textbaseDownloads
         self.limit = limit
         self.milvusServer=address
         self.batchSize = batchSize
-        self.forceReimport = forceReimport
+        # self.forceReimport = forceReimport
         self.importType = importType
-        p(f'\t forceReimport = {self.forceReimport}')
+        # p(f'\t forceReimport = {self.forceReimport}')
     
     def upload(self):
         
@@ -92,31 +101,31 @@ class Uploader:
         batchCounter = 0
         i = 0 # general counter, skipped and unskipped
         counterUploaded = 0
-        counterSkipped = 0
+        # counterSkipped = 0
         while(True):
             crtBuffer = list(islice(ssentences, self.batchSize))
             if len(crtBuffer) == 0: break # this is really a do while
             
             ids = [it.getId() for it in crtBuffer]
             
-            # see what data can be skipped if the collection is not new and
-            # the forceReimport flag is set
-            if self.milvusVectore.collectionAlreadyExists and not self.forceReimport:
-                # see if some of the data is not already in there
-                existingIds = [it['id'] for it in self.milvusVectore.idsExist(ids)]
-                notexistingIds = [it for it in ids if not it in existingIds]
-                counterSkipped += len(notexistingIds)
-                for id in existingIds:
-                    p (f'- SKIP #{i} : {id}')
-                    i += 1
+            # # see what data can be skipped if the collection is not new and
+            # # the forceReimport flag is set
+            # if self.milvusVectore.collectionAlreadyExists and not self.forceReimport:
+            #     # see if some of the data is not already in there
+            #     existingIds = [it['id'] for it in self.milvusVectore.idsExist(ids)]
+            #     notexistingIds = [it for it in ids if not it in existingIds]
+            #     counterSkipped += len(notexistingIds)
+            #     for id in existingIds:
+            #         p (f'- SKIP #{i} : {id}')
+            #         i += 1
                     
-                # keep only non-existing (new)
-                crtBuffer = [it for it in crtBuffer if it.getId() in notexistingIds]
-            #
+            #     # keep only non-existing (new)
+            #     crtBuffer = [it for it in crtBuffer if it.getId() in notexistingIds]
+            # # fi
             
             if len(crtBuffer) > 0:
-                texts = [it.text() for it in crtBuffer]
-                ids = [it.getId() for it in crtBuffer] # again because crtBuffer may have changed
+                texts   = [it.text()  for it in crtBuffer]
+                ids     = [it.getId() for it in crtBuffer] # again because crtBuffer may have changed
                 
                 p(f'sending {len(ids)} text chunks to encoder...')
                 embeddingWatch = StopWatch().start()
@@ -132,10 +141,14 @@ class Uploader:
                 milvInsertionwatch = StopWatch().start()
                 
                 # milv.putAll(ids, embeddings)
-                milv.bulkUploadFiles(os.path.join(self.milvusUploadDir, enc.name),
-                                     batchCounter, 
-                                     ids, 
-                                     embeddings)
+                # uploadDir = os.path.join(self.milvusDataDir, enc.name)
+                # uploadDir = self.milvusDataDir
+                taskId = milv.bulkUploadLocalFS_rowbasedJson(
+                    self.bucket,
+                    batchCounter, 
+                    ids, 
+                    embeddings)
+                yield taskId
                 
                 counterUploaded += len(embeddings)
                 
@@ -144,11 +157,11 @@ class Uploader:
                 p(f"flushed. milvus insertion took {milvInsertionwatch.stop()}")
             
             batchCounter += 1
-        # done
+        # while
         
         milv.flush()
         milv.collection.compact()
-        milv.createIndex()
+        # milv.createIndex()
         
         p(f'.👑 upload finished. total entities: {milv.count()}. took {stopwatch.stop()}. bye.')
         return counterUploaded
@@ -176,7 +189,7 @@ if __name__ == '__main__':
     importTypeArg: str      = args.t
     forceReimport           = args.f
     address                 = args.a
-    
+
     importType: ImportType
     match importTypeArg.lower():
         case 'sentence' | 'sent' | 's':
@@ -185,7 +198,7 @@ if __name__ == '__main__':
             importType = ImportType.PARAGRAPH
         case _:
             raise Exception(f'unknown import type {importTypeArg}, sentence or paragraph')
-                
+
     if not os.path.isdir(tbdir):
         raise(Exception("not a directory: %s" % tbdir))
 
