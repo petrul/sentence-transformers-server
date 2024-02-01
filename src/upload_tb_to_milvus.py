@@ -1,11 +1,12 @@
 #! /usr/bin/env python3
-from simile.tb_readers import *
-from simile.milvus_store import *
-from simile.vecstore import *
-from simile.encoder import *
+from .simile.tb_readers import *
+from .simile.milvus_store import *
+from .simile.vecstore import *
+from .simile.encoder import *
+from .simile.util import p, StopWatch
+from .simile.minio_is_a_map import *
+
 from itertools import islice
-from simile.util import p, StopWatch
-from simile.minio_is_a_map import *
 
 
 import enum
@@ -61,7 +62,6 @@ class Uploader:
                  encoder = EncoderFactory.all_MiniLM_L6_v2(),
                  limit = -1,
                  batchSize = 2000,
-                #  forceReimport = True,
                  importType: ImportType = ImportType.SENTENCE
                  ) -> None:
         self.bucket = minio['a-bucket']
@@ -69,23 +69,18 @@ class Uploader:
         self.collectionName = collectionName
         self.textbaseDownloads = textbaseDownloads
         self.limit = limit
-        self.milvusServer=address
+        self.milvusServerAddress=address
         self.batchSize = batchSize
-        # self.forceReimport = forceReimport
         self.importType = importType
-        # p(f'\t forceReimport = {self.forceReimport}')
+        self.milvusVectore = MilvusVecstore(address=self.milvusServerAddress, collectionName=self.collectionName)
     
     def upload(self):
         
         stopwatch =  StopWatch().start()
         
         enc = self.encoder
-        colName = self.collectionName
-        
-        self.milvusVectore = MilvusVecstore(address=self.milvusServer, collectionName=colName)
         milv = self.milvusVectore
         # milv.collection.compact()
-                
         tbdl = self.textbaseDownloads
         p(f'will import from {tbdl.basedir}')
         
@@ -148,6 +143,7 @@ class Uploader:
                     batchCounter, 
                     ids, 
                     embeddings)
+                
                 yield taskId
                 
                 counterUploaded += len(embeddings)

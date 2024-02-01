@@ -56,7 +56,6 @@ class MilvusVecstore(Store):
         # self.createIndex_IVFFLAT_OnEmbeddings()
         raise Exception('unimpl')
 
-    # NB: this might eat up RAM
     def createIndex_IVFFLAT_L2_OnEmbeddings(self, metric_type = 'L2', nlist = 128):
         print(self.fmt.format("Start Creating index IVF_FLAT"))
         index = {
@@ -91,7 +90,7 @@ class MilvusVecstore(Store):
 
 
 
-
+    bulkUploadsRoot =  'uploads-bulk'
     def bulkUploadLocalFS_rowbasedJson(self, 
         # milvusDataDir: str,
         minioBucket: MinioBucket,
@@ -131,7 +130,8 @@ class MilvusVecstore(Store):
             "rows": rows
         }
         
-        jsonBucketObjName = f'{self.collection.name}-#{batchCounter}.json'
+        
+        jsonBucketObjName = f'{self.bulkUploadsRoot}/{self.collection.name}/{self.collection.name}-#{batchCounter}.json'
         # dumpPath = os.path.join(milvusDataDir, dumpName)
         # with open(dumpPath, "w" ) as fh:
         jsondata = json.dumps(data)
@@ -142,7 +142,6 @@ class MilvusVecstore(Store):
         task_id = utility.do_bulk_insert(
             collection_name=self.collection.name,
             is_row_based=True,
-            #         /var/lib/milvus/data/uploads/all-MiniLM-L6-v2/test_sentences_RLOVvJAsG0-#0.json
             files=[ jsonBucketObjName ]
         )
         self.print_task(task_id)
