@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy
 import pickle
 import os
-from .util import *
+from util import *
 
 class Cache:
     def put(self, key: str, value: numpy.ndarray):

@@ -1,6 +1,6 @@
 import unittest
-from .util import *
-from .encoder import *
+from util import *
+from encoder import *
 
 class EncoderTest(unittest.TestCase):
     import tempfile
@@ -39,9 +39,10 @@ class EncoderTest(unittest.TestCase):
         
 
 if __name__ == '__main__':    
+    unittest.main()
     # tbtest = TextbaseReadersTest()
     
-    test = EncoderTest()
-    test.testCaching()
+    # test = EncoderTest()
+    # test.testCaching()
     # import hashlib
     # sha1encoder = hashlib.sha1()

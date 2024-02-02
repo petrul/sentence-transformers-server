@@ -1,7 +1,7 @@
-from .simile import tb_readers
-from .simile.util import *
-from .simile.minio_is_a_map import *
-from .upload_tb_to_milvus import *
+from simile.tb_readers import *
+from simile.util import *
+from simile.minio_is_a_map import *
+from upload_tb_to_milvus import *
 from itertools import islice
 
 import unittest

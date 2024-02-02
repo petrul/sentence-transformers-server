@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
-from .simile.tb_readers import *
-from .simile.milvus_store import *
-from .simile.vecstore import *
-from .simile.encoder import *
-from .simile.util import p, StopWatch
-from .simile.minio_is_a_map import *
+from simile.tb_readers import *
+from simile.milvus_store import *
+from simile.vecstore import *
+from simile.encoder import *
+from simile.util import p, StopWatch
+from simile.minio_is_a_map import *
 
 from itertools import islice
 
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', type=str, help='Milvus server address', default='localhost:19530')
     parser.add_argument('-c', type=str, help='Milvus collection name', required=True)
     parser.add_argument('-t', type=str, help='Import type: sentence | paragraph', default='sentence')
-    parser.add_argument('-f', type=bool, help='Force reimport', default=False)
+    # parser.add_argument('-f', type=bool, help='Force reimport', default=False)
     # parser.add_argument('--store_content', type=bool, help='Store content together with the vectors', default=False)
 
     args = parser.parse_args()
@@ -183,7 +183,7 @@ if __name__ == '__main__':
     tbdir = os.path.expanduser(args.d)
     colName                 = args.c
     importTypeArg: str      = args.t
-    forceReimport           = args.f
+    # forceReimport           = args.f
     address                 = args.a
 
     importType: ImportType
@@ -199,5 +199,6 @@ if __name__ == '__main__':
         raise(Exception("not a directory: %s" % tbdir))
 
     tbdl  = TextbaseDownloads(tbdir)
-    uploader = Uploader(tbdl, colName, address=address, forceReimport=forceReimport, importType=importType)
+    minio = MinioServer()
+    uploader = Uploader(tbdl, colName, minio, address=address, importType=importType)
     uploader.upload()
