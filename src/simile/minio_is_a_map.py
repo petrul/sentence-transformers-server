@@ -1,6 +1,6 @@
 from typing import Any
 from minio import Minio
-from .util import *
+from util import *
 import io
 from typing import BinaryIO, ByteString
 

@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
-from simile.tb_readers import *
-from simile.milvus_store import *
-from simile.vecstore import *
-from simile.encoder import *
-from simile.util import p, StopWatch
-from simile.minio_is_a_map import *
+from tb_readers import *
+from milvus_store import *
+from vecstore import *
+from encoder import *
+from util import p, StopWatch
+from minio_is_a_map import *
 
 from itertools import islice
 
@@ -96,27 +96,11 @@ class Uploader:
         batchCounter = 0
         i = 0 # general counter, skipped and unskipped
         counterUploaded = 0
-        # counterSkipped = 0
         while(True):
             crtBuffer = list(islice(ssentences, self.batchSize))
             if len(crtBuffer) == 0: break # this is really a do while
             
             ids = [it.getId() for it in crtBuffer]
-            
-            # # see what data can be skipped if the collection is not new and
-            # # the forceReimport flag is set
-            # if self.milvusVectore.collectionAlreadyExists and not self.forceReimport:
-            #     # see if some of the data is not already in there
-            #     existingIds = [it['id'] for it in self.milvusVectore.idsExist(ids)]
-            #     notexistingIds = [it for it in ids if not it in existingIds]
-            #     counterSkipped += len(notexistingIds)
-            #     for id in existingIds:
-            #         p (f'- SKIP #{i} : {id}')
-            #         i += 1
-                    
-            #     # keep only non-existing (new)
-            #     crtBuffer = [it for it in crtBuffer if it.getId() in notexistingIds]
-            # # fi
             
             if len(crtBuffer) > 0:
                 texts   = [it.text()  for it in crtBuffer]
@@ -166,7 +150,6 @@ if __name__ == '__main__':
     import argparse
     import os
     
-    # defaultCollectionName = "textbase_sentences"
     defaultImportType = 'sentence'
  
     parser = argparse.ArgumentParser(description='Upload a directory of tb downloads to Milvus')
@@ -175,15 +158,12 @@ if __name__ == '__main__':
     parser.add_argument('-a', type=str, help='Milvus server address', default='localhost:19530')
     parser.add_argument('-c', type=str, help='Milvus collection name', required=True)
     parser.add_argument('-t', type=str, help='Import type: sentence | paragraph', default='sentence')
-    # parser.add_argument('-f', type=bool, help='Force reimport', default=False)
-    # parser.add_argument('--store_content', type=bool, help='Store content together with the vectors', default=False)
 
     args = parser.parse_args()
 
     tbdir = os.path.expanduser(args.d)
     colName                 = args.c
     importTypeArg: str      = args.t
-    # forceReimport           = args.f
     address                 = args.a
 
     importType: ImportType

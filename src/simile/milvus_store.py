@@ -1,5 +1,5 @@
-from .vecstore import *
-from .minio_is_a_map import *
+from vecstore import *
+from minio_is_a_map import *
 import shutil
 import os
 
@@ -11,7 +11,7 @@ from pymilvus import (
     BulkInsertState
 )
 import numpy
-from .tb_readers import *
+from tb_readers import *
 
 class MilvusVecstore(Store):
 

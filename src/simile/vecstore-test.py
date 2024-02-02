@@ -1,5 +1,3 @@
-# from 'store'
-
 import unittest
 from vecstore import *
 from encoder import *
