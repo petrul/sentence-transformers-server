@@ -12,4 +12,4 @@ EXPOSE 8000
 WORKDIR /sentence_transformers_server/simile
 ENV PATH="/home/dockerapp/.local/bin:${PATH}"
 
-ENTRYPOINT [ "uvicorn", "restapi:app" ]
+ENTRYPOINT [ "uvicorn", "restapi:app", "--host", "0.0.0.0" ]
