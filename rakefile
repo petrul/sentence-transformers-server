@@ -27,3 +27,9 @@ task :clean do
     shell "find . -name .pytest_cache -type d -exec rm -rvf  \{\} \\;"
     shell "find . -name __pycache__ -type d -exec rm -rvf  \{\} \\;"
 end
+
+
+desc 'builds a base for any sentence_transformers based docker image: basically python + downloads basic models'
+task :docker_base do
+    shell "docker build -t sentence_transformers_base:0.1-SNAPSHOT -f docker/sentence_transformers_base.dockerfile ."
+end

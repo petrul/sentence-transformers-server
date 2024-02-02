@@ -118,7 +118,7 @@ for sentence in sentences:
             "embedding": v12_q_embeds[sentence]
         }
     ]
- 
+
  
     collection_v12.insert(v12_insert)
     collection_v12_ft5.insert(ft_insert)

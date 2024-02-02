@@ -1,6 +1,10 @@
+# Intro 
 Alias embeddings-server
 
-This is basically a SBERT sentence_transformers 'client' which uploads data into milvus.
+This is basically a sentence_transformers 'client' which makes the sentence_transformers python
+api available over a RESTI API.
+
+- uploads data into milvus.
 
 ## Prereqs
 ```
