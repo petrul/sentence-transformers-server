@@ -17,4 +17,4 @@ RUN pip install --no-cache-dir -U "uvicorn[standard]"
 COPY src/base /sentence_transformers_base
 RUN python3 /sentence_transformers_base/init_sentence_transformers.py
 
-
+ENTRYPOINT [ "/bin/bash" ]
