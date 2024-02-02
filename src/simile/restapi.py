@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from .encoder import *
-from .util import *
+from encoder import *
+from util import *
 
 app = FastAPI()
 

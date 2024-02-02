@@ -9,7 +9,7 @@ USER 10001
 
 EXPOSE 11111
 
-WORKDIR /sentence_transformers_server
+WORKDIR /sentence_transformers_server/simile
 ENV PATH="/home/dockerapp/.local/bin:${PATH}"
 
-ENTRYPOINT [ "uvicorn", "simile.restapi:app",  "--port", "11111" ]
+ENTRYPOINT [ "uvicorn", "restapi:app",  "--port", "11111" ]
