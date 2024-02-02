@@ -28,17 +28,28 @@ task :clean do
     shell "find . -name __pycache__ -type d -exec rm -rvf  \{\} \\;"
 end
 
-
-imagelabel="editii/sentence_transformers_base:0.1-SNAPSHOT"
+registry = "mini.local:5000"
+baseImagelabel="editii/sentence_transformers_base:0.1-SNAPSHOT"
+serverImagelabel="editii/sentence_transformers_server:0.1-SNAPSHOT"
 
 desc 'builds a base for any sentence_transformers based docker image: basically python + downloads basic models'
 task :docker_base do
-    shell "docker build -t #{imagelabel} -f docker/sentence_transformers_base.dockerfile ."
+    shell "docker build -t #{baseImagelabel} -f docker/sentence_transformers_base.dockerfile ."
+end
+
+desc 'builds a the sentence_transformers_server docker image'
+task :docker_server do
+    shell "docker build -t #{serverImagelabel} -f docker/sentence_transformers_server.dockerfile ."
 end
 
 desc 'publishes the sentence_transformers_base docker image'
 task :docker_base_publish do
-    registry = "mini.local:5000"
-    remoteimagelabel = "#{registry}/#{imagelabel}"
+    remoteimagelabel = "#{registry}/#{baseImagelabel}"
+    shell "docker push #{remoteimagelabel}"
+end
+
+desc 'publishes the sentence_transformers_server docker image'
+task :docker_server_publish do
+    remoteimagelabel = "#{registry}/#{serverImagelabel}"
     shell "docker push #{remoteimagelabel}"
 end

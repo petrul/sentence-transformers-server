@@ -1,6 +1,6 @@
 FROM python:3.12.1-bookworm
 
-ENV SENTENCE_TRANSFORMERS_SERVER_CACHE_DIR=/cache
+# ENV SENTENCE_TRANSFORMERS_SERVER_CACHE_DIR=/cache
 
 RUN apt-get --allow-releaseinfo-change update
 RUN apt-get update && apt-get upgrade -y
