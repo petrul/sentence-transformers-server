@@ -51,5 +51,6 @@ end
 desc 'publishes the sentence_transformers_server docker image'
 task :docker_server_publish do
     remoteimagelabel = "#{registry}/#{serverImagelabel}"
+    shell "docker tag #{serverImagelabel} #{remoteimagelabel}"
     shell "docker push #{remoteimagelabel}"
 end
