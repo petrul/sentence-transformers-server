@@ -12,4 +12,4 @@ EXPOSE 11111
 WORKDIR /sentence_transformers_server
 ENV PATH="/home/dockerapp/.local/bin:${PATH}"
 
-ENTRYPOINT [ "uvicorn", "src.simile.restapi:app",  "--port", "11111" ]
+ENTRYPOINT [ "uvicorn", "simile.restapi:app",  "--port", "11111" ]
