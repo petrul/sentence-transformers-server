@@ -10,5 +10,7 @@ USER 10001
 EXPOSE 11111
 
 WORKDIR /sentence_transformers_server
+ENV PATH="~/.local/bin:${PATH}"
+
 # ENTRYPOINT [ "python3", "/sentence_transformers_server/simile/restapi.py" ]
 ENTRYPOINT [ "uvicorn", "src.simile.restapi:app",  "--port", "11111" ]
