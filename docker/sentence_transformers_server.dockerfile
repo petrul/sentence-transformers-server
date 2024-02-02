@@ -4,13 +4,12 @@ ENV SENTENCE_TRANSFORMERS_SERVER_CACHE_DIR=/cache
 
 COPY src /sentence_transformers_server
 
-# RUN useradd -m dockerapp -u 10001
+# user dockerapp/10001 was already created in the base image
 USER 10001
 
 EXPOSE 11111
 
 WORKDIR /sentence_transformers_server
-ENV PATH="~/.local/bin:${PATH}"
+ENV PATH="/home/dockerapp/.local/bin:${PATH}"
 
-# ENTRYPOINT [ "python3", "/sentence_transformers_server/simile/restapi.py" ]
 ENTRYPOINT [ "uvicorn", "src.simile.restapi:app",  "--port", "11111" ]
