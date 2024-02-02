@@ -126,7 +126,7 @@ class EncoderFactory:
     def __getModelCacheDir(self, modelName: str) -> str:
         return os.path.join(self.cacheRootDir, modelName)
 
-    def getModel(self, name: str):
+    def __getitem__(self, name: str):
         if not name in self.modelsCache:
             st = SentenceTransformer(name)
             p(f'model {name}, with max_seq_length {st.get_max_seq_length()}')
@@ -135,7 +135,7 @@ class EncoderFactory:
             self.modelsCache[name] = resp
 
         return self.modelsCache[name]
-            
+    
     def all_MiniLM_L6_v2(self):
         return self.getModel(NAME_ALL_MINILM_L6_V2)
     
