@@ -5,7 +5,10 @@
 # 
 from sentence_transformers import SentenceTransformer
 
-for name in ['all-MiniLM-L6-v2', 'all-mpnet-base-v2']:
+modelnames = ['all-MiniLM-L6-v2', 'all-mpnet-base-v2']
+print(f'will download {len(modelnames)} models: {modelnames}')
+
+for name in modelnames:
     print(f'downloading {name}')
     model = SentenceTransformer(name)
 
