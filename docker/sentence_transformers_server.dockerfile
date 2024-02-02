@@ -7,9 +7,9 @@ COPY src /sentence_transformers_server
 # user dockerapp/10001 was already created in the base image
 USER 10001
 
-EXPOSE 11111
+EXPOSE 8000
 
 WORKDIR /sentence_transformers_server/simile
 ENV PATH="/home/dockerapp/.local/bin:${PATH}"
 
-ENTRYPOINT [ "uvicorn", "restapi:app",  "--port", "11111" ]
+ENTRYPOINT [ "uvicorn", "restapi:app" ]
