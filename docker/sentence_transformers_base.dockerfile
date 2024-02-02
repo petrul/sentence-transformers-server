@@ -1,8 +1,13 @@
 FROM python:3.12.1-bookworm
 
-RUN apt update
+RUN apt-get --allow-releaseinfo-change update
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y build-essential cmake pkg-config
+RUN apt install -y python3-pkgconfig 
+
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir -U sentence_transformers fastapi pymilvus minio
+RUN pip install --no-cache-dir -U sentencepiece 
+RUN pip install --no-cache-dir -U sentencepiece sentence_transformers fastapi pymilvus minio
 RUN pip install --no-cache-dir -U "uvicorn[standard]"
 
 COPY src/base /sentence_transformers_base

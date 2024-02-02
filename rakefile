@@ -29,7 +29,16 @@ task :clean do
 end
 
 
+imagelabel="editii/sentence_transformers_base:0.1-SNAPSHOT"
+
 desc 'builds a base for any sentence_transformers based docker image: basically python + downloads basic models'
 task :docker_base do
-    shell "docker build -t sentence_transformers_base:0.1-SNAPSHOT -f docker/sentence_transformers_base.dockerfile ."
+    shell "docker build -t #{imagelabel} -f docker/sentence_transformers_base.dockerfile ."
+end
+
+desc 'publishes the sentence_transformers_base docker image'
+task :docker_base_publish do
+    registry = "mini.local:5000"
+    remoteimagelabel = "#{registry}/#{imagelabel}"
+    shell "docker push #{remoteimagelabel}"
 end
