@@ -137,7 +137,7 @@ class EncoderFactory:
         return self.modelsCache[name]
     
     def all_MiniLM_L6_v2(self):
-        return self.getModel(NAME_ALL_MINILM_L6_V2)
+        return self[NAME_ALL_MINILM_L6_V2]
     
     def all_mpnet_base_v2(self):
-        return self.getModel(NAME_ALL_MPNET_BASE_V2 )
+        return self[NAME_ALL_MPNET_BASE_V2]
