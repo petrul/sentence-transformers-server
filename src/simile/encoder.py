@@ -5,6 +5,9 @@ import pickle
 import os
 from util import p
 
+NAME_ALL_MINILM_L6_V2='all-MiniLM-L6-v2'
+NAME_ALL_MPNET_BASE_V2='all-mpnet-base-v2'
+
 class Cache:
     def put(self, key: str, value: numpy.ndarray):
         pass
@@ -23,6 +26,7 @@ class VectorCache(Cache):
     cachedir: str
 
     def __init__(self, cachedir: str):
+        assert cachedir != None
         self.cachedir = cachedir
         if not os.path.exists(cachedir):
             os.makedirs(cachedir)
@@ -111,12 +115,29 @@ class Encoder:
         assert len(resp) == len(sentences)
         return resp
 
-class EncoderFactory: 
 
-    @staticmethod
-    def all_MiniLM_L6_v2(cache = Cache()):
-        name = 'all-MiniLM-L6-v2'
-        st = SentenceTransformer(name)
-        p('model [%s], with max_seq_length %d' % (name, st.get_max_seq_length()))        
-        return Encoder(name, st, cache=cache)
+class EncoderFactory:
 
+    def __init__(self, cacheRootDir: str = '/cache') -> None:
+        self.cacheRootDir = cacheRootDir
+        
+    modelsCache = {}
+    
+    def __getModelCacheDir(self, modelName: str) -> str:
+        return os.path.join(self.cacheRootDir, modelName)
+
+    def getModel(self, name: str):
+        if not name in self.modelsCache:
+            st = SentenceTransformer(name)
+            p(f'model {name}, with max_seq_length {st.get_max_seq_length()}')
+            cache = VectorCache(self.__getModelCacheDir(name))
+            resp = Encoder(name, st, cache=cache)
+            self.modelsCache[name] = resp
+
+        return self.modelsCache[name]
+            
+    def all_MiniLM_L6_v2(self):
+        return self.getModel(NAME_ALL_MINILM_L6_V2)
+    
+    def all_mpnet_base_v2(self):
+        return self.getModel(NAME_ALL_MPNET_BASE_V2 )

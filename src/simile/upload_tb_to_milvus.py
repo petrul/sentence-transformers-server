@@ -5,6 +5,7 @@ from vecstore import *
 from encoder import *
 from util import p, StopWatch
 from minio_is_a_map import *
+from application_properties import *
 
 from itertools import islice
 
@@ -55,11 +56,16 @@ class Uploader:
     # milvusDataDir = os.path.expanduser('~/docker-volumes-nobkp/milvus/milvus/')
     bucket: MinioBucket
     
+    appprops = ApplicationProperties()
+    cachedir = appprops.cacheDir()
+    encfact = EncoderFactory(cacheRootDir=cachedir)
+    encoder = encfact.all_MiniLM_L6_v2()
+    
     def __init__(self, textbaseDownloads: TextbaseDownloads, 
                  collectionName: str, 
                  minio: MinioServer,
                  address: str = 'localhost:19530',
-                 encoder = EncoderFactory.all_MiniLM_L6_v2(),
+                 encoder = encoder,
                  limit = -1,
                  batchSize = 2000,
                  importType: ImportType = ImportType.SENTENCE
