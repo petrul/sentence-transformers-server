@@ -28,6 +28,11 @@ class RestApiTest(unittest.TestCase):
         assert len(resp_mpnet) == 2
         assert resp_mpnet[0] != response_mini[0]
         
+    def test_info(self):
+        info = self.client.get(f"/api/models/{NAME_ALL_MINILM_L6_V2}/info")
+        assert info.json()['name'] == NAME_ALL_MINILM_L6_V2
+        assert info.json()['max_seq_length'] == 256
 
 if __name__  == '__main__':
     unittest.main()
+    # RestApiTest().test_info()
