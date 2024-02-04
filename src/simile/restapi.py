@@ -2,12 +2,14 @@ from fastapi import FastAPI, HTTPException
 from encoder import *
 from util import *
 from application_properties import *
+import huggingface_hub
 
 app = FastAPI()
 
 appprops = ApplicationProperties()
 cachedir = appprops.cacheDir()
-encoderFactory = EncoderFactory(cacheRootDir=cachedir)
+cacheFactory = VectorCacheFactory(cacheRootDir=cachedir)
+encoderFactory = EncoderFactory(cacheFactory=cacheFactory)
 
 @app.get("/api/models/names")
 def get_model_names():
@@ -15,9 +17,11 @@ def get_model_names():
 
 @app.post("/api/models/{model_id}/encode")
 def post_encode_(body: list[str], model_id: str = NAME_ALL_MINILM_L6_V2):
-    # if not model_id in models.keys():
-    #     raise HTTPException(status_code=404, detail="Model not found")
-    enc = encoderFactory[model_id]
-    # encoder = models[model_id]
-    resp = enc.encode(body)
-    return [ it.tolist() for it in resp]
+    try:
+        enc = encoderFactory[model_id]
+        resp = enc.encode(body)
+        return [ it.tolist() for it in resp]
+    except huggingface_hub.utils._errors.RepositoryNotFoundError as  err:
+        raise HTTPException(status_code=404, detail=str(err))
+    except huggingface_hub.utils._errors.HfHubHTTPError as err:
+        raise HTTPException(status_code=500, detail=str(err))

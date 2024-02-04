@@ -115,29 +115,71 @@ class Encoder:
         assert len(resp) == len(sentences)
         return resp
 
+class CacheFactory:
+    def buildCache(self, name: str) -> Cache:
+        pass
 
-class EncoderFactory:
-
+class VectorCacheFactory(CacheFactory):
     def __init__(self, cacheRootDir: str = '/cache') -> None:
         self.cacheRootDir = cacheRootDir
-        
-    modelsCache = {}
-    
+
     def __getModelCacheDir(self, modelName: str) -> str:
         return os.path.join(self.cacheRootDir, modelName)
+   
+    def buildCache(self, name: str) -> VectorCache:
+        cache = VectorCache(self.__getModelCacheDir(name))
+        return cache
+   
+class NoCacheFactory(CacheFactory):
+        def buildCache(self, name: str) -> Cache:
+            return Cache()
 
-    def __getitem__(self, name: str):
+class EncoderFactory:
+    
+    cacheFact: CacheFactory
+    
+    def __init__(self, cacheFactory: CacheFactory = NoCacheFactory()) -> None:
+        self.cacheFact = cacheFactory
+         
+    modelsCache = {}
+
+    def newEncoder(self, name: str) -> Encoder:
+        st = SentenceTransformer(name)
+        p(f'model {name}, with max_seq_length {st.get_max_seq_length()}')
+
+        cache = self.cacheFact.buildCache(name)
+        return Encoder(name, st, cache=cache)
+    
+    def getEncoder(self, name: str) -> Encoder:
         if not name in self.modelsCache:
-            st = SentenceTransformer(name)
-            p(f'model {name}, with max_seq_length {st.get_max_seq_length()}')
-            cache = VectorCache(self.__getModelCacheDir(name))
-            resp = Encoder(name, st, cache=cache)
+            resp = self.newEncoder(name)
             self.modelsCache[name] = resp
 
         return self.modelsCache[name]
     
-    def all_MiniLM_L6_v2(self):
-        return self[NAME_ALL_MINILM_L6_V2]
+    def __getitem__(self, name: str) -> Encoder:
+        return self.getEncoder(name)
     
-    def all_mpnet_base_v2(self):
-        return self[NAME_ALL_MPNET_BASE_V2]
+    def all_MiniLM_L6_v2(self) -> Encoder:
+        return self.getEncoder(NAME_ALL_MINILM_L6_V2)
+    
+    def all_mpnet_base_v2(self) -> Encoder:
+        return self.getEncoder(NAME_ALL_MPNET_BASE_V2)
+
+if __name__ == '__main__':
+    import application_properties
+    props = application_properties.ApplicationProperties()
+    cachedir = props.cacheDir()
+    cf = VectorCacheFactory(cachedir)
+    ef = EncoderFactory(cf)
+    enc = ef.all_MiniLM_L6_v2()
+    v1 = enc.encode(['hello', 'there'])
+    for v in v1:
+        assert len(v) == 384
+    
+    enc2 = ef.all_mpnet_base_v2()
+    v2 = enc.encode(['hello', 'there'])
+    for v in v2:
+        assert len(v) == 384
+    
+    

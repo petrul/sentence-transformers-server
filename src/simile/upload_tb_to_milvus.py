@@ -58,7 +58,8 @@ class Uploader:
     
     appprops = ApplicationProperties()
     cachedir = appprops.cacheDir()
-    encfact = EncoderFactory(cacheRootDir=cachedir)
+    cf = VectorCacheFactory(cachedir)
+    encfact = EncoderFactory(cacheFactory=cf)
     encoder = encfact.all_MiniLM_L6_v2()
     
     def __init__(self, textbaseDownloads: TextbaseDownloads, 
