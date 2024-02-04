@@ -28,8 +28,6 @@ class RestApiTest(unittest.TestCase):
         assert len(resp_mpnet) == 2
         assert resp_mpnet[0] != response_mini[0]
         
-        assert False
-        
 
 if __name__  == '__main__':
     unittest.main()

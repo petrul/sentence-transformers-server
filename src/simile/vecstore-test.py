@@ -5,7 +5,7 @@ from encoder import *
 class StoreTest(unittest.TestCase):
             
     def testGetPut(self):
-        encoder = EncoderFactory.all_MiniLM_L6_v2()    
+        encoder = EncoderFactory().all_MiniLM_L6_v2()
         sentences = [
             'the dog barks',
             'the dog is brown',
@@ -29,7 +29,7 @@ class StoreTest(unittest.TestCase):
         
 
     def testInMemoryStore(self):
-        encoder = EncoderFactory.all_MiniLM_L6_v2()
+        encoder = EncoderFactory().all_MiniLM_L6_v2()
 
         sentences = [
             'the dog barks',
