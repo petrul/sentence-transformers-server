@@ -15,8 +15,11 @@ encoderFactory = EncoderFactory(cacheFactory=cacheFactory)
 def get_model_names():
     return [NAME_ALL_MINILM_L6_V2, NAME_ALL_MPNET_BASE_V2]
 
+
 @app.post("/api/models/{model_id}/encode")
-def post_encode_(body: list[str], model_id: str = NAME_ALL_MINILM_L6_V2):
+
+@app.post("/api/models/{model_id}/encode")
+def post_models_encode_(body: list[str], model_id: str = NAME_ALL_MINILM_L6_V2):
     try:
         enc = encoderFactory[model_id]
         resp = enc.encode(body)
